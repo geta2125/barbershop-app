@@ -36,7 +36,7 @@ export default function Services() {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search service..."
-                            className="w-[220px] pl-9 pr-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-xl text-sm"
+                            className="w-[220px] pl-9 pr-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-xl text-sm outline-none"
                         />
                     </div>
 
@@ -55,63 +55,87 @@ export default function Services() {
 
             </div>
 
-            {/* TABLE */}
-            <div className="bg-[#1a1a1a] rounded-2xl border border-white/10 overflow-hidden">
+            {/* 🔥 CARD GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
-                <table className="w-full text-sm">
-                    <thead className="bg-[#111] text-gray-400 uppercase text-xs">
-                        <tr>
-                            <th className="p-4 text-left">Service</th>
-                            <th className="p-4 text-left">Category</th>
-                            <th className="p-4 text-left">Duration</th>
-                            <th className="p-4 text-left">Price</th>
-                            <th className="p-4 text-left">Status</th>
-                            <th className="p-4 text-center">Action</th>
-                        </tr>
-                    </thead>
+                {filtered.map((s) => (
+                    <div
+                        key={s.id}
+                        className="
+                            bg-[#1a1a1a]
+                            rounded-2xl
+                            border border-white/10
+                            overflow-hidden
+                            group
+                            hover:shadow-xl hover:shadow-black/40
+                            transition-all duration-300
+                        "
+                    >
 
-                    <tbody>
-                        {filtered.map((s) => (
-                            <tr key={s.id} className="border-t border-white/5 hover:bg-white/5">
+                        {/* IMAGE */}
+                        <div className="h-[160px] overflow-hidden">
+                            <img
+                                src={`/img/services/${s.gambar}`}
+                                alt={s.nama_service}
+                                className="
+                                    w-full h-full object-cover
+                                    group-hover:scale-110
+                                    transition duration-500
+                                "
+                            />
+                        </div>
 
-                                <td className="p-4 font-semibold">{s.nama_service}</td>
+                        {/* CONTENT */}
+                        <div className="p-4 space-y-3">
 
-                                <td className="p-4 text-gray-400">{s.kategori}</td>
+                            {/* TITLE */}
+                            <h2 className="font-semibold text-lg">
+                                {s.nama_service}
+                            </h2>
 
-                                <td className="p-4 text-gray-400">{s.durasi} min</td>
+                            {/* CATEGORY */}
+                            <p className="text-sm text-gray-400">
+                                {s.kategori} • {s.durasi} min
+                            </p>
 
-                                <td className="p-4 text-[#7A1F2D] font-bold">
-                                    Rp {s.harga.toLocaleString()}
-                                </td>
+                            {/* PRICE */}
+                            <p className="text-[#7A1F2D] font-bold text-lg">
+                                Rp {s.harga.toLocaleString()}
+                            </p>
 
-                                <td className="p-4">
-                                    <span className={`
-                                        px-3 py-1 rounded-full text-xs font-semibold
-                                        ${s.status === "Aktif"
-                                            ? "bg-green-500/20 text-green-400"
-                                            : "bg-red-500/20 text-red-400"}
-                                    `}>
-                                        {s.status}
-                                    </span>
-                                </td>
+                            {/* STATUS */}
+                            <span className={`
+                                inline-block px-3 py-1 rounded-full text-xs font-semibold
+                                ${s.status === "Aktif"
+                                    ? "bg-green-500/20 text-green-400"
+                                    : "bg-red-500/20 text-red-400"}
+                            `}>
+                                {s.status}
+                            </span>
 
-                                <td className="p-4 text-center">
-                                    <div className="flex justify-center gap-3">
-                                        <button className="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
-                                            <FaEdit />
-                                        </button>
-                                        <button className="p-2 bg-red-500/20 text-red-400 rounded-lg">
-                                            <FaTrash />
-                                        </button>
-                                    </div>
-                                </td>
+                            {/* ACTION */}
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition">
+                                    <FaEdit />
+                                </button>
+                                <button className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition">
+                                    <FaTrash />
+                                </button>
+                            </div>
 
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </div>
+
+                    </div>
+                ))}
 
             </div>
+
+            {/* EMPTY */}
+            {filtered.length === 0 && (
+                <div className="text-center text-gray-500 mt-10">
+                    No services found
+                </div>
+            )}
 
         </div>
     );

@@ -68,7 +68,7 @@ export default function Dashboard() {
     return (
         <div className={`
             ${darkMode ? "bg-[#0f0f0f] text-white" : "bg-gray-100"}
-            ml-[260px] pt-[120px] px-7 pb-10 min-h-screen
+            ml-[260px] pt-[120px] px-7 pb-7 min-h-screen
         `}>
 
             {/* HEADER */}
