@@ -1,0 +1,26 @@
+[
+  { "id": 1, "nama_service": "Haircut Classic", "kategori": "Haircut", "durasi": 30, "harga": 50000, "status": "Aktif" },
+  { "id": 2, "nama_service": "Fade Cut", "kategori": "Haircut", "durasi": 45, "harga": 70000, "status": "Aktif" },
+  { "id": 3, "nama_service": "Beard Trim", "kategori": "Grooming", "durasi": 20, "harga": 30000, "status": "Aktif" },
+  { "id": 4, "nama_service": "Hair Coloring", "kategori": "Treatment", "durasi": 90, "harga": 150000, "status": "Aktif" },
+  { "id": 5, "nama_service": "Hair Spa", "kategori": "Treatment", "durasi": 60, "harga": 120000, "status": "Aktif" },
+  { "id": 6, "nama_service": "Keratin Treatment", "kategori": "Treatment", "durasi": 120, "harga": 250000, "status": "Nonaktif" },
+
+  { "id": 7, "nama_service": "Undercut Style", "kategori": "Haircut", "durasi": 40, "harga": 65000, "status": "Aktif" },
+  { "id": 8, "nama_service": "Buzz Cut", "kategori": "Haircut", "durasi": 20, "harga": 40000, "status": "Aktif" },
+  { "id": 9, "nama_service": "Pompadour Styling", "kategori": "Haircut", "durasi": 50, "harga": 80000, "status": "Aktif" },
+  { "id": 10, "nama_service": "Crew Cut", "kategori": "Haircut", "durasi": 30, "harga": 55000, "status": "Aktif" },
+
+  { "id": 11, "nama_service": "Beard Styling", "kategori": "Grooming", "durasi": 30, "harga": 45000, "status": "Aktif" },
+  { "id": 12, "nama_service": "Shaving Clean", "kategori": "Grooming", "durasi": 25, "harga": 35000, "status": "Aktif" },
+  { "id": 13, "nama_service": "Facial Treatment", "kategori": "Grooming", "durasi": 45, "harga": 90000, "status": "Aktif" },
+
+  { "id": 14, "nama_service": "Hair Mask Treatment", "kategori": "Treatment", "durasi": 60, "harga": 110000, "status": "Aktif" },
+  { "id": 15, "nama_service": "Scalp Detox", "kategori": "Treatment", "durasi": 50, "harga": 100000, "status": "Aktif" },
+  { "id": 16, "nama_service": "Anti Dandruff Treatment", "kategori": "Treatment", "durasi": 70, "harga": 130000, "status": "Aktif" },
+  { "id": 17, "nama_service": "Hair Rebonding", "kategori": "Treatment", "durasi": 120, "harga": 300000, "status": "Nonaktif" },
+
+  { "id": 18, "nama_service": "Kids Haircut", "kategori": "Haircut", "durasi": 25, "harga": 35000, "status": "Aktif" },
+  { "id": 19, "nama_service": "Senior Haircut", "kategori": "Haircut", "durasi": 30, "harga": 40000, "status": "Aktif" },
+  { "id": 20, "nama_service": "Premium Grooming Package", "kategori": "Grooming", "durasi": 90, "harga": 180000, "status": "Aktif" }
+]

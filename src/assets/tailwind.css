@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: 'Barlow';
+    src: url('/fonts/Barlow-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    src: url('/fonts/Poppins-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Poppins-ExtraBold';
+    src: url('/fonts/Poppins-ExtraBold.ttf');
+}
+
+@theme {
+    --font-barlow: "Barlow", sans-serif;
+    --font-poppins: "Poppins", sans-serif;
+    --font-poppins-extrabold: "Poppins-ExtraBold", sans-serif;
+
+    --color-latar: #f3f4f6;
+    --color-teks: #374151; 
+    --color-teks-samping: #6b7280;
+    --color-garis: #e5e7eb; 
+    --color-hijau: #00B074; 
+    --color-merah: #ef4444; 
+    --color-biru: #3b82f6;
+    --color-kuning: #f59e0b;
+}
+.input-pink {
+  @apply w-full border border-pink-200 p-3 rounded-xl bg-pink-50 focus:outline-none focus:ring-2 focus:ring-pink-200 transition;
+}
+
+.btn-pink {
+  @apply bg-gradient-to-r from-pink-400 to-pink-500 text-white px-5 py-2 rounded-xl shadow hover:scale-105 transition;
+}
+.glitch {
+  position: relative;
+  color: #111;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+.glitch::before {
+  color: #ff4da6;
+  z-index: -1;
+  animation: glitchTop 1s infinite;
+}
+
+.glitch::after {
+  color: #00ffff;
+  z-index: -2;
+  animation: glitchBottom 1s infinite;
+}
+
+@keyframes glitchTop {
+  0% { transform: translate(2px, -2px); }
+  50% { transform: translate(-2px, 2px); }
+  100% { transform: translate(2px, -2px); }
+}
+
+@keyframes glitchBottom {
+  0% { transform: translate(-2px, 2px); }
+  50% { transform: translate(2px, -2px); }
+  100% { transform: translate(-2px, 2px); }
+}
