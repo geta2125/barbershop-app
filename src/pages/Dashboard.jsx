@@ -132,7 +132,7 @@ export default function Dashboard() {
                         <span className="text-xs text-gray-400">Last 7 days</span>
                     </div>
 
-                    <div className="h-[300px]">
+                    <div className="h-[200px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={lineData}>
                                 <defs>
@@ -163,8 +163,8 @@ export default function Dashboard() {
 
                     <h2 className="mb-4">Distribution</h2>
 
-                    <div className="h-[220px]">
-                        <ResponsiveContainer>
+                    <div className="h-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">                            
                             <PieChart>
                                 <Pie
                                     data={statsData}

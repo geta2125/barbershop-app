@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* FONT */
 @font-face {
     font-family: 'Barlow';
     src: url('/fonts/Barlow-Regular.ttf');
@@ -15,30 +16,77 @@
     src: url('/fonts/Poppins-ExtraBold.ttf');
 }
 
+/* THEME */
 @theme {
     --font-barlow: "Barlow", sans-serif;
     --font-poppins: "Poppins", sans-serif;
     --font-poppins-extrabold: "Poppins-ExtraBold", sans-serif;
 
-    --color-latar: #f3f4f6;
-    --color-teks: #374151; 
-    --color-teks-samping: #6b7280;
-    --color-garis: #e5e7eb; 
-    --color-hijau: #00B074; 
-    --color-merah: #ef4444; 
-    --color-biru: #3b82f6;
-    --color-kuning: #f59e0b;
-}
-.input-pink {
-  @apply w-full border border-pink-200 p-3 rounded-xl bg-pink-50 focus:outline-none focus:ring-2 focus:ring-pink-200 transition;
+    /* WARNA UTAMA PROJECT */
+    --color-bg: #0f0f0f;
+    --color-card: #1a1a1a;
+    --color-border: #2a2a2a;
+
+    --color-text: #ffffff;
+    --color-text-soft: #a1a1a1;
+
+    --color-primary: #7A1F2D;      /* maroon */
+    --color-primary-hover: #912535;
+
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
 }
 
-.btn-pink {
-  @apply bg-gradient-to-r from-pink-400 to-pink-500 text-white px-5 py-2 rounded-xl shadow hover:scale-105 transition;
+/* INPUT */
+.input-main {
+  @apply w-full 
+  border border-white/10 
+  p-3 rounded-xl 
+  bg-[#1a1a1a] 
+  text-white
+  placeholder-gray-500
+  focus:outline-none 
+  focus:ring-2 
+  focus:ring-[#7A1F2D]/40 
+  transition;
 }
+
+/* BUTTON */
+.btn-primary {
+  @apply bg-[#7A1F2D] 
+  text-white 
+  px-5 py-2 
+  rounded-xl 
+  shadow-md 
+  hover:bg-[#912535] 
+  hover:scale-[1.03] 
+  transition;
+}
+
+/* CARD */
+.card-main {
+  @apply bg-[#1a1a1a] 
+  border border-white/10 
+  rounded-2xl 
+  p-5 
+  shadow-lg;
+}
+
+/* GLASS EFFECT */
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+}
+
+/* GLOW EFFECT */
+.glow {
+  box-shadow: 0 0 30px rgba(122, 31, 45, 0.3);
+}
+
+/* TEXT GLITCH (tetap dipakai tapi disesuaikan warna) */
 .glitch {
   position: relative;
-  color: #111;
+  color: white;
 }
 
 .glitch::before,
@@ -50,14 +98,15 @@
 }
 
 .glitch::before {
-  color: #ff4da6;
+  color: #7A1F2D;
   z-index: -1;
   animation: glitchTop 1s infinite;
 }
 
 .glitch::after {
-  color: #00ffff;
+  color: #ffffff;
   z-index: -2;
+  opacity: 0.2;
   animation: glitchBottom 1s infinite;
 }
 

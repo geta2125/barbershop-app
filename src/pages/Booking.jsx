@@ -141,7 +141,7 @@ export default function Booking() {
                 {/* EMPTY */}
                 {filtered.length === 0 && (
                     <div className="p-6 text-center text-gray-500">
-                        No booking found 😢
+                        No booking found
                     </div>
                 )}
 
