@@ -16,11 +16,11 @@ export default function Header() {
                 "
             >
                 {/* GLOW */}
-                <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#7A1F2D]/10 blur-3xl rounded-full" />
+                <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#A87C2D]/10 blur-3xl rounded-full" />
 
                 {/* LEFT */}
                 <h1 className="text-lg font-semibold tracking-wide text-white">
-                    Velvet<span className="text-[#7A1F2D]">Blade</span>
+                    Velvet<span className="text-[#A87C2D]">Blade</span>
                 </h1>
 
                 {/* CENTER - SEARCH */}
@@ -34,7 +34,7 @@ export default function Header() {
                         border border-white/10
                         rounded-xl
                         hover:border-white/20
-                        focus-within:border-[#7A1F2D]
+                        focus-within:border-[#A87C2D]
                         transition
                     "
                 >
@@ -71,7 +71,7 @@ export default function Header() {
                                     absolute -top-1 -right-1
                                     px-1.5 py-[1px]
                                     text-[10px]
-                                    bg-[#7A1F2D]
+                                    bg-[#A87C2D]
                                     text-white
                                     rounded-full
                                 "

@@ -49,7 +49,7 @@ export default function Dashboard() {
     ];
 
     const statsData = [
-        { name: "Bookings", value: stats.booking, color: "#7A1F2D" },
+        { name: "Bookings", value: stats.booking, color: "#E9C664" },
         { name: "Customers", value: stats.customers, color: "#D3CDC3" },
         { name: "Canceled", value: stats.canceled, color: "#3a3a3a" },
     ];
@@ -88,7 +88,7 @@ export default function Dashboard() {
                     {/* DARK MODE */}
                     <button
                         onClick={() => setDarkMode(!darkMode)}
-                        className="p-2 bg-[#1a1a1a] border border-white/10 rounded-lg"
+                        className="p-2 bg-[var(--color-card)] border border-white/10 rounded-lg"
                     >
                         {darkMode ? <FaSun /> : <FaMoon />}
                     </button>
@@ -96,10 +96,10 @@ export default function Dashboard() {
                     {/* BUTTON */}
                     <button className="
                         flex items-center gap-2 
-                        bg-[#7A1F2D] px-5 py-2.5 
+                        bg-[#E9C664] px-5 py-2.5 
                         rounded-lg font-semibold
-                        hover:bg-[#912535]
-                        shadow-lg shadow-[#7A1F2D]/20
+                        hover:bg-[#847925]
+                        shadow-lg shadow-[#E9C664]/20
                     ">
                         <FaPlus />
                         Booking
@@ -123,7 +123,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* AREA */}
-                <div className="lg:col-span-2 bg-[#1a1a1a] rounded-2xl border border-white/10 p-6">
+                <div className="lg:col-span-2 bg-[var(--color-card)] rounded-2xl border border-white/10 p-6">
 
                     <div className="flex justify-between mb-4">
                         <h2 className="flex items-center gap-2">
@@ -137,8 +137,8 @@ export default function Dashboard() {
                             <AreaChart data={lineData}>
                                 <defs>
                                     <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#7A1F2D" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#7A1F2D" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#E9C664" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#E9C664" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
 
@@ -149,7 +149,7 @@ export default function Dashboard() {
                                 <Area
                                     type="monotone"
                                     dataKey="value"
-                                    stroke="#7A1F2D"
+                                    stroke="#E9C664"
                                     strokeWidth={3}
                                     fill="url(#grad)"
                                 />
@@ -159,7 +159,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* PIE */}
-                <div className="bg-[#1a1a1a] rounded-2xl border border-white/10 p-6">
+                <div className="bg-[var(--color-card)] rounded-2xl border border-white/10 p-6">
 
                     <h2 className="mb-4">Distribution</h2>
 
@@ -185,7 +185,7 @@ export default function Dashboard() {
             </div>
 
             {/* RECENT */}
-            <div className="mt-8 bg-[#1a1a1a] rounded-2xl border border-white/10 p-6">
+            <div className="mt-8 bg-[var(--color-card)] rounded-2xl border border-white/10 p-6">
 
                 <h2 className="flex items-center gap-2 mb-4">
                     <FaCalendarAlt /> Recent Bookings
@@ -208,9 +208,9 @@ function Card({ title, value, icon, primary, highlight }) {
     return (
         <div className={`
             p-5 rounded-xl border border-white/10 transition hover:-translate-y-1
-            ${primary ? "bg-[#7A1F2D] shadow-lg shadow-[#7A1F2D]/20" : ""}
+            ${primary ? "bg-[#E9C664] shadow-lg shadow-[#E9C664]/20" : ""}
             ${highlight ? "bg-[#634536] shadow-lg shadow-[#634536]/20" : ""}
-            ${!primary && !highlight ? "bg-[#1a1a1a]" : ""}
+            ${!primary && !highlight ? "bg-[var(--color-card)]" : ""}
         `}>
             <div className="flex items-center gap-2 text-gray-400 text-xs mb-2">
                 {icon} {title}
@@ -228,7 +228,7 @@ function Recent({ customer, barber, service, revenue }) {
                 <p className="font-semibold">{customer}</p>
                 <p className="text-sm text-gray-400">{barber} • {service}</p>
             </div>
-            <p className="text-[#7A1F2D] font-bold">
+            <p className="text-[#E9C664] font-bold">
                 Rp {revenue.toLocaleString()}
             </p>
         </div>

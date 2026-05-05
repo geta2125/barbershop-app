@@ -1,14 +1,65 @@
-import { FaSearch, FaEdit, FaTrash, FaChevronDown } from "react-icons/fa";
+import { FaSearch, FaPlus } from "react-icons/fa";
 import { useState } from "react";
 import dataBooking from "../data/databooking.json";
+import dataServices from "../data/dataservices.json";
 
 export default function Booking() {
 
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
+    const [bookings, setBookings] = useState(dataBooking);
+    const [showForm, setShowForm] = useState(false);
 
-    // FILTER
-    const filtered = dataBooking.filter(b => {
+    // fungsi ambil waktu sekarang
+    const getNow = () => {
+        const now = new Date();
+        const offset = now.getTimezoneOffset();
+        const local = new Date(now.getTime() - (offset * 60000));
+        return local.toISOString().slice(0, 16);
+    };
+
+    const [form, setForm] = useState({
+        nama_customer: "",
+        barber: "",
+        layanan: "",
+        jadwal: getNow(),
+        harga: "",
+        status_booking: "Pending",
+    });
+
+    // HANDLE INPUT
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    // HANDLE SUBMIT (FIX UTAMA)
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const newBooking = {
+            id_booking: Date.now(),
+            ...form,
+            harga: Number(form.harga),
+        };
+
+        console.log(newBooking); // debug
+
+        setBookings(prev => [newBooking, ...prev]); 
+        setShowForm(false);
+
+        // reset form
+        setForm({
+            nama_customer: "",
+            barber: "",
+            layanan: "",
+            jadwal: getNow(),
+            harga: "",
+            status_booking: "Pending",
+        });
+    };
+
+    // FILTER DATA
+    const filtered = bookings.filter(b => {
         const matchSearch = b.nama_customer.toLowerCase().includes(search.toLowerCase());
         const matchStatus = statusFilter === "All" || b.status_booking === statusFilter;
         return matchSearch && matchStatus;
@@ -18,134 +69,151 @@ export default function Booking() {
         <div className="ml-[260px] pt-[120px] px-7 pb-10 min-h-screen bg-[#0f0f0f] text-white">
 
             {/* HEADER */}
-            <div className="mb-8 flex justify-between items-center flex-wrap gap-4">
+            <div className="mb-8 flex justify-between items-center">
 
-                {/* LEFT */}
-                <div>
-                    <h1 className="text-3xl font-bold">Booking</h1>
-                    <p className="text-gray-500 text-sm mt-1">
-                        Manage your bookings
-                    </p>
-                </div>
+                <h1 className="text-3xl font-bold">Booking</h1>
 
-                {/* RIGHT (SEARCH + FILTER) */}
-                <div className="flex items-center gap-3">
+                <div className="flex gap-3">
 
-                    {/* SEARCH */}
-                    <div className="relative">
-                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                        <input
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search customer..."
-                            className="w-[220px] pl-9 pr-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-xl text-sm focus:outline-none"
-                        />
-                    </div>
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        className="flex items-center gap-2 bg-[#A87C2D] px-4 py-2 rounded-xl"
+                    >
+                        <FaPlus /> Add
+                    </button>
 
-                    {/* FILTER */}
-                    <div className="relative">
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="
-                                w-[160px]
-                                appearance-none
-                                px-4 py-2 pr-10
-                                bg-[#1a1a1a]
-                                border border-white/10
-                                rounded-xl
-                                text-sm text-gray-300
-                                focus:outline-none
-                                cursor-pointer
-                            "
-                        >
-                            <option value="All">Semua Status</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Canceled">Canceled</option>
-                        </select>
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search..."
+                        className="px-3 py-2 bg-[#1a1a1a] rounded-xl"
+                    />
 
-                        <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none" />
-                    </div>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-3 py-2 bg-[#1a1a1a] rounded-xl"
+                    >
+                        <option value="All">All</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Canceled">Canceled</option>
+                    </select>
 
                 </div>
-
             </div>
+
+            {/* FORM */}
+            {showForm && (
+                <form
+                    onSubmit={handleSubmit}
+                    className="mb-6 bg-[#1a1a1a] p-6 rounded-2xl grid grid-cols-2 gap-4"
+                >
+                    <input
+                        name="nama_customer"
+                        placeholder="Customer"
+                        value={form.nama_customer}
+                        onChange={handleChange}
+                        className="p-2 bg-[#111] rounded"
+                    />
+
+                    <input
+                        name="barber"
+                        placeholder="Barber"
+                        value={form.barber}
+                        onChange={handleChange}
+                        className="p-2 bg-[#111] rounded"
+                    />
+
+                    {/* SERVICE */}
+                    <select
+                        name="layanan"
+                        value={form.layanan}
+                        onChange={(e) => {
+                            const selected = dataServices.find(
+                                s => s.nama_service === e.target.value
+                            );
+
+                            if (!selected) return;
+
+                            setForm(prev => ({
+                                ...prev,
+                                layanan: selected.nama_service,
+                                harga: selected.harga
+                            }));
+                        }}
+                        className="p-2 bg-[#111] rounded"
+                    >
+                        <option value="">Pilih Service</option>
+                        {dataServices
+                            .filter(s => s.status === "Aktif")
+                            .map((s) => (
+                                <option key={s.id} value={s.nama_service}>
+                                    {s.nama_service}
+                                </option>
+                            ))}
+                    </select>
+
+                    {/* HARGA AUTO */}
+                    <input
+                        value={form.harga}
+                        readOnly
+                        className="p-2 bg-[#111] rounded text-gray-400"
+                    />
+
+                    {/* JADWAL */}
+                    <input
+                        type="datetime-local"
+                        name="jadwal"
+                        value={form.jadwal}
+                        onChange={handleChange}
+                        className="p-2 bg-[#111] rounded"
+                    />
+
+                    {/* STATUS */}
+                    <select
+                        name="status_booking"
+                        value={form.status_booking}
+                        onChange={handleChange}
+                        className="p-2 bg-[#111] rounded"
+                    >
+                        <option>Pending</option>
+                        <option>Completed</option>
+                        <option>Canceled</option>
+                    </select>
+
+                    <button className="col-span-2 bg-[#A87C2D] py-2 rounded-xl">
+                        Save Booking
+                    </button>
+                </form>
+            )}
 
             {/* TABLE */}
-            <div className="bg-[#1a1a1a] rounded-2xl border border-white/10 overflow-hidden shadow-lg">
+            <table className="w-full text-sm bg-[#1a1a1a] rounded-2xl overflow-hidden">
+                <thead className="bg-[#111] text-gray-400">
+                    <tr>
+                        <th className="p-4 text-left">Customer</th>
+                        <th className="p-4 text-left">Barber</th>
+                        <th className="p-4 text-left">Service</th>
+                        <th className="p-4 text-left">Schedule</th>
+                        <th className="p-4 text-left">Price</th>
+                        <th className="p-4 text-left">Status</th>
+                    </tr>
+                </thead>
 
-                <table className="w-full text-sm">
-                    <thead className="bg-[#111] text-gray-400 uppercase text-xs">
-                        <tr>
-                            <th className="p-4 text-left">Customer</th>
-                            <th className="p-4 text-left">Barber</th>
-                            <th className="p-4 text-left">Service</th>
-                            <th className="p-4 text-left">Schedule</th>
-                            <th className="p-4 text-left">Price</th>
-                            <th className="p-4 text-left">Status</th>
-                            <th className="p-4 text-center">Action</th>
+                <tbody>
+                    {filtered.map((b) => (
+                        <tr key={b.id_booking} className="border-t border-white/5">
+                            <td className="p-4">{b.nama_customer}</td>
+                            <td className="p-4">{b.barber}</td>
+                            <td className="p-4">{b.layanan}</td>
+                            <td className="p-4">{b.jadwal}</td>
+                            <td className="p-4">Rp {b.harga.toLocaleString()}</td>
+                            <td className="p-4">{b.status_booking}</td>
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        {filtered.map((b) => (
-                            <tr
-                                key={b.id_booking}
-                                className="border-t border-white/5 hover:bg-white/5 transition"
-                            >
-
-                                <td className="p-4 font-semibold">{b.nama_customer}</td>
-
-                                <td className="p-4 text-gray-400">{b.barber}</td>
-
-                                <td className="p-4">{b.layanan}</td>
-
-                                <td className="p-4 text-gray-400">{b.jadwal}</td>
-
-                                <td className="p-4 text-[#7A1F2D] font-bold">
-                                    Rp {b.harga.toLocaleString()}
-                                </td>
-
-                                {/* STATUS */}
-                                <td className="p-4">
-                                    <span className={`
-                                        px-3 py-1 rounded-full text-xs font-semibold
-                                        ${b.status_booking === "Completed"
-                                            ? "bg-green-500/20 text-green-400"
-                                            : b.status_booking === "Pending"
-                                                ? "bg-yellow-500/20 text-yellow-400"
-                                                : "bg-red-500/20 text-red-400"}
-                                    `}>
-                                        {b.status_booking}
-                                    </span>
-                                </td>
-
-                                {/* ACTION */}
-                                <td className="p-4 text-center">
-                                    <div className="flex justify-center gap-3">
-                                        <button className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition">
-                                            <FaEdit />
-                                        </button>
-                                        <button className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition">
-                                            <FaTrash />
-                                        </button>
-                                    </div>
-                                </td>
-
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                {/* EMPTY */}
-                {filtered.length === 0 && (
-                    <div className="p-6 text-center text-gray-500">
-                        No booking found
-                    </div>
-                )}
-
-            </div>
+                    ))}
+                </tbody>
+            </table>
 
         </div>
     );

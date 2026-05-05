@@ -99,7 +99,7 @@ export default function Services() {
                             </p>
 
                             {/* PRICE */}
-                            <p className="text-[#7A1F2D] font-bold text-lg">
+                            <p className="text-[#A87C2D] font-bold text-lg">
                                 Rp {s.harga.toLocaleString()}
                             </p>
 

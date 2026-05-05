@@ -4,7 +4,7 @@ export default function Loading() {
 
             {/* SPINNER */}
             <div className="relative">
-                <div className="w-14 h-14 border-4 border-[#7A1F2D] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-14 h-14 border-4 border-[#A87C2D] border-t-transparent rounded-full animate-spin"></div>
 
                 {/* ICON */}
                 <span className="absolute inset-0 flex items-center justify-center text-[#D3CDC3] text-xl">

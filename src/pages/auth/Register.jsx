@@ -2,7 +2,7 @@ export default function Register() {
     return (
         <div>
             <h2 className="text-2xl font-semibold text-[#D3CDC3] mb-6 text-center">
-                Create Account ✨
+                Create Account
             </h2>
 
             <form>
@@ -12,9 +12,9 @@ export default function Register() {
                     </label>
                     <input
                         type="email"
-                        className="w-full px-4 py-2 bg-[#222323] border border-[#7A1F2D] rounded-lg 
+                        className="w-full px-4 py-2 bg-[#222323] border border-[#A87C2D] rounded-lg 
                         text-[#D3CDC3] placeholder-[#D3CDC3]/60 
-                        focus:border-[#7A1F2D] focus:ring-2 focus:ring-[#7A1F2D]/30 outline-none"
+                        focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/30 outline-none"
                         placeholder="you@example.com"
                     />
                 </div>
@@ -25,9 +25,9 @@ export default function Register() {
                     </label>
                     <input
                         type="password"
-                        className="w-full px-4 py-2 bg-[#222323] border border-[#7A1F2D] rounded-lg 
+                        className="w-full px-4 py-2 bg-[#222323] border border-[#A87C2D] rounded-lg 
                         text-[#D3CDC3] placeholder-[#D3CDC3]/60 
-                        focus:border-[#7A1F2D] focus:ring-2 focus:ring-[#7A1F2D]/30 outline-none"
+                        focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/30 outline-none"
                         placeholder="********"
                     />
                 </div>
@@ -38,16 +38,16 @@ export default function Register() {
                     </label>
                     <input
                         type="password"
-                        className="w-full px-4 py-2 bg-[#222323] border border-[#7A1F2D] rounded-lg 
+                        className="w-full px-4 py-2 bg-[#222323] border border-[#A87C2D] rounded-lg 
                         text-[#D3CDC3] placeholder-[#D3CDC3]/60 
-                        focus:border-[#7A1F2D] focus:ring-2 focus:ring-[#7A1F2D]/30 outline-none"
+                        focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/30 outline-none"
                         placeholder="********"
                     />
                 </div>
 
                 <button
                     type="submit"
-                    className="w-full bg-[#7A1F2D] hover:bg-[#641824] text-white font-semibold py-2 rounded-lg transition shadow-md"
+                    className="w-full bg-[#A87C2D] hover:bg-[#641824] text-white font-semibold py-2 rounded-lg transition shadow-md"
                 >
                     Register
                 </button>
