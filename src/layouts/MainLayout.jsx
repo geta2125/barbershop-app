@@ -3,24 +3,35 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
 export default function MainLayout() {
+
     return (
-        <div className="flex min-h-screen bg-[#222323] text-[#D3CDC3]">
+
+        <div className="bg-[#0f0f17] min-h-screen overflow-x-hidden">
 
             {/* SIDEBAR */}
             <Sidebar />
 
-            {/* MAIN */}
-            <div className="flex flex-col flex-1">
+            {/* HEADER */}
+            <Header />
 
-                {/* HEADER */}
-                <Header />
+            {/* CONTENT */}
+            <main
+                className="
+                    ml-60
+                    pt-20
+                    min-h-screen
+                    bg-[#0f0f17]
+                    px-6
+                    py-6
+                "
+            >
 
-                {/* CONTENT */}
-                <main className="flex-1 p-4 md:p-6 bg-[#222323]">
-                    <Outlet />
-                </main>
+                <Outlet />
 
-            </div>
+            </main>
+
         </div>
+
     );
+
 }

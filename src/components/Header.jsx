@@ -1,123 +1,53 @@
-import { FaSearch, FaBell, FaCog } from "react-icons/fa";
+import { FaCalendarAlt } from "react-icons/fa";
+import { useState } from "react";
 
 export default function Header() {
-    return (
-        <div className="fixed top-5 left-[280px] right-5 z-50">
-            <div
-                className="
-                    relative
-                    flex items-center justify-between
-                    px-6 py-4
-                    rounded-2xl
-                    bg-gradient-to-r from-[#1a1a1a]/80 to-[#111]/80
-                    backdrop-blur-xl
-                    border border-white/10
-                    shadow-[0_10px_30px_rgba(0,0,0,0.6)]
-                "
-            >
-                {/* GLOW */}
-                <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#A87C2D]/10 blur-3xl rounded-full" />
+    // State untuk mengontrol komponen toggle switch (on/off)
+    const [isToggle, setIsToggle] = useState(false);
 
-                {/* LEFT */}
-                <h1 className="text-lg font-semibold tracking-wide text-white">
-                    Velvet<span className="text-[#A87C2D]">Blade</span>
+    return (
+        /* bg-[#111116] di bawah ini bikin warna dasar Header jadi hitam pekat elegan, 
+           dan border-b border-[#1a1a24] sebagai garis pembatas bawah yang tipis 
+        */
+        <div className="fixed top-0 left-60 right-0 h-20 bg-[#111116] border-b border-[#1a1a24] z-40 flex items-center justify-between px-8 select-none">
+
+            {/* SISI KIRI: JUDUL HALAMAN & BADGE TANGGAL */}
+            <div className="flex items-center gap-6">
+                <h1 className="text-2xl font-bold text-white tracking-wide">
+                    GroomGold
                 </h1>
 
-                {/* CENTER - SEARCH */}
+                {/* Kotak Date Picker (Warna disesuaikan jadi kontras di atas hitam) */}
+                <div className="flex items-center gap-3 bg-[#1b1b24] px-3.5 py-2 rounded-lg border border-white/[0.01] text-[#8e8e9f] text-xs cursor-pointer hover:bg-[#23232f] transition">
+                    <span className="font-medium">01.06.2023-31.06.2023</span>
+                    <FaCalendarAlt className="text-[#8e8e9f]/80 text-xs" />
+                </div>
+            </div>
+
+            {/* SISI KANAN: TOGGLE SWITCH & IDENTITAS USER */}
+            <div className="flex items-center gap-8">
+
+                {/* Toggle Switch (Warna background tombol disesuaikan jadi kontras di atas hitam) */}
                 <div
-                    className="
-                        flex items-center gap-3
-                        flex-1 max-w-[500px]
-                        mx-6
-                        px-4 py-2
-                        bg-white/5
-                        border border-white/10
-                        rounded-xl
-                        hover:border-white/20
-                        focus-within:border-[#A87C2D]
-                        transition
-                    "
+                    onClick={() => setIsToggle(!isToggle)}
+                    className="w-11 h-6 flex items-center bg-[#1b1b24] rounded-full p-1 cursor-pointer border border-white/[0.01]"
                 >
-                    <FaSearch className="text-gray-400 text-sm" />
-                    <input
-                        type="text"
-                        placeholder="Search anything..."
-                        className="
-                            w-full bg-transparent outline-none
-                            text-sm text-white
-                            placeholder-gray-500
-                        "
+                    <div className={`w-4 h-4 rounded-full shadow-md transform transition-all duration-200 ${isToggle ? 'translate-x-5 bg-[#dfb34c]' : 'translate-x-0 bg-gray-500'
+                        }`} />
+                </div>
+
+                {/* Profil User (Jane Cooper) */}
+                <div className="flex items-center gap-3">
+                    <img
+                        src="img/cewe.jpg"
+                        alt="Jane Cooper"
+                        className="w-8 h-8 rounded-full object-cover border border-white/10"
                     />
+                    <span className="text-sm font-medium text-white tracking-wide">
+                        Jane Cooper
+                    </span>
                 </div>
 
-                {/* RIGHT */}
-                <div className="flex items-center gap-4">
-
-                    {/* ICONS */}
-                    <div className="flex items-center gap-3">
-
-                        {/* NOTIFICATION */}
-                        <div
-                            className="
-                                relative p-2
-                                bg-white/5 rounded-lg
-                                hover:bg-white/10
-                                transition cursor-pointer
-                            "
-                        >
-                            <FaBell className="text-gray-300" />
-                            <span
-                                className="
-                                    absolute -top-1 -right-1
-                                    px-1.5 py-[1px]
-                                    text-[10px]
-                                    bg-[#A87C2D]
-                                    text-white
-                                    rounded-full
-                                "
-                            >
-                                3
-                            </span>
-                        </div>
-
-                        {/* SETTINGS */}
-                        <div
-                            className="
-                                p-2
-                                bg-white/5 rounded-lg
-                                hover:bg-white/10
-                                transition cursor-pointer
-                            "
-                        >
-                            <FaCog className="text-gray-300" />
-                        </div>
-
-                    </div>
-
-                    {/* PROFILE */}
-                    <div
-                        className="
-                            flex items-center gap-3
-                            px-3 py-2
-                            bg-white/5
-                            border border-white/10
-                            rounded-xl
-                            hover:border-white/20
-                            transition
-                        "
-                    >
-                        <img
-                            src="img/cewe.jpg"
-                            alt="profile"
-                            className="w-9 h-9 rounded-full object-cover border border-white/10"
-                        />
-                        <div className="text-xs leading-tight">
-                            <p className="text-gray-400">Welcome back</p>
-                            <p className="text-white font-semibold">Geta Dewi</p>
-                        </div>
-                    </div>
-
-                </div>
             </div>
         </div>
     );

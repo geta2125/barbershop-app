@@ -1,5 +1,12 @@
-import { FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import {
+    FaSearch,
+    FaEdit,
+    FaTrash,
+    FaCalendarAlt
+} from "react-icons/fa";
+
 import { useState } from "react";
+
 import dataServices from "../data/dataservices.json";
 
 export default function Services() {
@@ -7,136 +14,261 @@ export default function Services() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
 
-    const filtered = dataServices.filter(s => {
-        const matchSearch = s.nama_service.toLowerCase().includes(search.toLowerCase());
-        const matchStatus = statusFilter === "All" || s.status === statusFilter;
+    const filtered = dataServices.filter((s) => {
+
+        const matchSearch =
+            s.nama_service
+                .toLowerCase()
+                .includes(search.toLowerCase());
+
+        const matchStatus =
+            statusFilter === "All" ||
+            s.status === statusFilter;
+
         return matchSearch && matchStatus;
+
     });
 
     return (
-        <div className="ml-[260px] pt-[120px] px-7 pb-10 min-h-screen bg-[#0f0f0f] text-white">
 
-            {/* HEADER */}
-            <div className="mb-8 flex justify-between items-center flex-wrap gap-4">
+        <div className="w-full min-h-screen bg-[#0f0f17] text-white overflow-x-hidden">
 
-                <div>
-                    <h1 className="text-3xl font-bold">Services</h1>
-                    <p className="text-gray-500 text-sm mt-1">
-                        Manage barber services
-                    </p>
-                </div>
+            {/* WRAPPER */}
+            <div className="w-full px-6 lg:px-10 py-8">
 
-                {/* SEARCH + FILTER */}
-                <div className="flex items-center gap-3">
+                {/* HEADER */}
+                <PageHeader
+                    title="Services"
+                    breadcrumb={["Home", "Services", "Services"]}
+                >
+
+                    <div className="flex items-center gap-2 bg-[#1b1b24] px-4 py-2 rounded-xl border border-[#242335] text-xs text-gray-400">
+
+                        <span className="font-medium">
+                            Barber Services
+                        </span>
+
+                        <FaCalendarAlt className="text-[#dfb34c]" />
+
+                    </div>
+
+                </PageHeader>
+
+                {/* FILTER */}
+                <div className="flex flex-col lg:flex-row justify-between gap-4 mb-8">
 
                     {/* SEARCH */}
                     <div className="relative">
-                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+
+                        <FaSearch className="
+                            absolute left-4 top-1/2
+                            -translate-y-1/2
+                            text-gray-500
+                        " />
+
                         <input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search service..."
-                            className="w-[220px] pl-9 pr-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-xl text-sm outline-none"
+                            className="
+                                w-full lg:w-[260px]
+                                pl-11 pr-4 py-3
+                                bg-[#1b1b24]
+                                border border-[#242335]
+                                rounded-2xl
+                                outline-none
+                            "
                         />
+
                     </div>
 
-                    {/* FILTER */}
+                    {/* STATUS */}
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-xl text-sm"
+                        className="
+                            px-4 py-3
+                            bg-[#1b1b24]
+                            border border-[#242335]
+                            rounded-2xl
+                            outline-none
+                        "
                     >
-                        <option value="All">Semua Status</option>
-                        <option value="Aktif">Aktif</option>
-                        <option value="Nonaktif">Nonaktif</option>
+
+                        <option value="All">
+                            All Status
+                        </option>
+
+                        <option value="Aktif">
+                            Aktif
+                        </option>
+
+                        <option value="Nonaktif">
+                            Nonaktif
+                        </option>
+
                     </select>
 
                 </div>
 
-            </div>
+                {/* GRID */}
+                <div className="
+                    grid grid-cols-1
+                    sm:grid-cols-2
+                    xl:grid-cols-4
+                    gap-6
+                ">
 
-            {/*  CARD GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filtered.map((s) => (
 
-                {filtered.map((s) => (
-                    <div
-                        key={s.id}
-                        className="
-                            bg-[#1a1a1a]
-                            rounded-2xl
-                            border border-white/10
-                            overflow-hidden
-                            group
-                            hover:shadow-xl hover:shadow-black/40
-                            transition-all duration-300
-                        "
-                    >
+                        <div
+                            key={s.id}
+                            className="
+                                bg-[#1b1b24]
+                                border border-[#242335]
+                                rounded-3xl
+                                overflow-hidden
+                                group
+                                hover:border-[#dfb34c]/20
+                                transition
+                            "
+                        >
 
-                        {/* IMAGE */}
-                        <div className="h-[160px] overflow-hidden">
-                            <img
-                                src={`/img/services/${s.gambar}`}
-                                alt={s.nama_service}
-                                className="
-                                    w-full h-full object-cover
-                                    group-hover:scale-110
-                                    transition duration-500
-                                "
-                            />
-                        </div>
+                            {/* IMAGE */}
+                            <div className="h-[200px] overflow-hidden">
 
-                        {/* CONTENT */}
-                        <div className="p-4 space-y-3">
+                                <img
+                                    src={`/img/services/${s.gambar}`}
+                                    alt={s.nama_service}
+                                    className="
+                                        w-full h-full object-cover
+                                        group-hover:scale-110
+                                        transition duration-500
+                                    "
+                                />
 
-                            {/* TITLE */}
-                            <h2 className="font-semibold text-lg">
-                                {s.nama_service}
-                            </h2>
+                            </div>
 
-                            {/* CATEGORY */}
-                            <p className="text-sm text-gray-400">
-                                {s.kategori} • {s.durasi} min
-                            </p>
+                            {/* CONTENT */}
+                            <div className="p-5">
 
-                            {/* PRICE */}
-                            <p className="text-[#A87C2D] font-bold text-lg">
-                                Rp {s.harga.toLocaleString()}
-                            </p>
+                                <div className="mb-4">
 
-                            {/* STATUS */}
-                            <span className={`
-                                inline-block px-3 py-1 rounded-full text-xs font-semibold
-                                ${s.status === "Aktif"
-                                    ? "bg-green-500/20 text-green-400"
-                                    : "bg-red-500/20 text-red-400"}
-                            `}>
-                                {s.status}
-                            </span>
+                                    <h2 className="text-xl font-bold mb-1">
+                                        {s.nama_service}
+                                    </h2>
 
-                            {/* ACTION */}
-                            <div className="flex justify-end gap-2 pt-2">
-                                <button className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition">
-                                    <FaEdit />
-                                </button>
-                                <button className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition">
-                                    <FaTrash />
-                                </button>
+                                    <p className="text-sm text-gray-400">
+                                        {s.kategori} • {s.durasi} min
+                                    </p>
+
+                                </div>
+
+                                <div className="flex justify-between items-center mb-5">
+
+                                    <h3 className="text-[#dfb34c] text-2xl font-black">
+
+                                        Rp {s.harga.toLocaleString()}
+
+                                    </h3>
+
+                                    <span className={`
+                                        px-3 py-1 rounded-full text-xs font-semibold
+                                        ${s.status === "Aktif"
+                                            ? "bg-green-500/20 text-green-400"
+                                            : "bg-red-500/20 text-red-400"
+                                        }
+                                    `}>
+
+                                        {s.status}
+
+                                    </span>
+
+                                </div>
+
+                                {/* ACTION */}
+                                <div className="flex justify-end gap-3">
+
+                                    <button className="
+                                        p-3 rounded-2xl
+                                        bg-blue-500/20
+                                        text-blue-400
+                                        hover:bg-blue-500/30
+                                        transition
+                                    ">
+
+                                        <FaEdit />
+
+                                    </button>
+
+                                    <button className="
+                                        p-3 rounded-2xl
+                                        bg-red-500/20
+                                        text-red-400
+                                        hover:bg-red-500/30
+                                        transition
+                                    ">
+
+                                        <FaTrash />
+
+                                    </button>
+
+                                </div>
+
                             </div>
 
                         </div>
 
-                    </div>
-                ))}
+                    ))}
+
+                </div>
 
             </div>
 
-            {/* EMPTY */}
-            {filtered.length === 0 && (
-                <div className="text-center text-gray-500 mt-10">
-                    No services found
+        </div>
+
+    );
+
+}
+
+// PAGE HEADER
+function PageHeader({ title, breadcrumb, children }) {
+
+    return (
+
+        <div className="mb-8">
+
+            <div className="
+                flex flex-col lg:flex-row
+                lg:justify-between
+                lg:items-center
+                gap-5
+                bg-[#1b1b24]
+                border border-[#242335]
+                rounded-3xl
+                px-8 py-7
+            ">
+
+                <div>
+
+                    <h1 className="text-4xl font-black">
+                        {title}
+                    </h1>
+
+                    <p className="text-sm text-[#8e8e9f] mt-2">
+                        {breadcrumb.join(" / ")}
+                    </p>
+
                 </div>
-            )}
+
+                <div>
+                    {children}
+                </div>
+
+            </div>
 
         </div>
+
     );
+
 }
