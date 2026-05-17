@@ -1,10 +1,17 @@
 import {
     FaSearch,
     FaPlus,
-    FaCalendarAlt
+    FaCalendarAlt,
+    FaUserCircle,
+    FaClock,
+    FaCheckCircle,
+    FaTimesCircle,
+    FaEye,
+    FaTimes
 } from "react-icons/fa";
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import dataBooking from "../data/databooking.json";
 import dataServices from "../data/dataservices.json";
@@ -13,13 +20,16 @@ export default function Booking() {
 
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
+
     const [bookings, setBookings] = useState(dataBooking);
+
     const [showForm, setShowForm] = useState(false);
 
-    // GET DATE NOW
+    // GET CURRENT DATE
     const getNow = () => {
 
         const now = new Date();
+
         const offset = now.getTimezoneOffset();
 
         const local = new Date(
@@ -30,6 +40,7 @@ export default function Booking() {
 
     };
 
+    // FORM
     const [form, setForm] = useState({
         nama_customer: "",
         barber: "",
@@ -49,7 +60,7 @@ export default function Booking() {
 
     };
 
-    // SUBMIT
+    // HANDLE SUBMIT
     const handleSubmit = (e) => {
 
         e.preventDefault();
@@ -60,7 +71,7 @@ export default function Booking() {
             harga: Number(form.harga),
         };
 
-        setBookings(prev => [
+        setBookings((prev) => [
             newBooking,
             ...prev
         ]);
@@ -96,21 +107,28 @@ export default function Booking() {
 
     return (
 
-        <div className="w-full min-h-screen bg-[#0f0f17] text-white overflow-x-hidden">
+        <div className="w-full h-full bg-[#0f0f17] text-white overflow-hidden">
 
             {/* WRAPPER */}
-            <div className="w-full px-6 lg:px-10 py-8">
+            <div className="w-full px-5 lg:px-7 py-5">
 
                 {/* PAGE HEADER */}
                 <PageHeader
                     title="Booking"
-                    breadcrumb={["Home", "Booking", "Booking"]}
+                    breadcrumb={["Home", "Booking", "Management"]}
                 >
 
-                    <div className="flex items-center gap-2 bg-[#1b1b24] px-4 py-2 rounded-xl border border-[#242335] text-xs text-gray-400">
+                    <div className="
+                        flex items-center gap-2
+                        bg-[#1b1b24]
+                        border border-[#242335]
+                        px-4 py-2
+                        rounded-2xl
+                        text-xs text-gray-400
+                    ">
 
                         <span className="font-medium">
-                            Booking Management
+                            Booking Schedule
                         </span>
 
                         <FaCalendarAlt className="text-[#dfb34c]" />
@@ -119,29 +137,42 @@ export default function Booking() {
 
                 </PageHeader>
 
-                {/* ACTION */}
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                {/* ACTION SECTION */}
+                <div className="
+                    flex flex-col lg:flex-row
+                    lg:items-center
+                    lg:justify-between
+                    gap-5
+                    mb-8
+                ">
 
+                    {/* ADD BUTTON */}
                     <button
-                        onClick={() => setShowForm(!showForm)}
+                        onClick={() => setShowForm(true)}
                         className="
-                            flex items-center gap-2
+                            flex items-center justify-center gap-2
                             bg-[#dfb34c]
                             text-[#111116]
-                            px-5 py-3
+                            font-black
+                            px-6 py-3.5
                             rounded-2xl
-                            font-bold
+                            transition-all duration-300
                             hover:opacity-90
-                            transition
+                            shadow-[0_10px_30px_rgba(223,179,76,0.15)]
                         "
                     >
 
                         <FaPlus />
+
                         Add Booking
 
                     </button>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    {/* SEARCH & FILTER */}
+                    <div className="
+                        flex flex-col md:flex-row
+                        gap-4
+                    ">
 
                         {/* SEARCH */}
                         <div className="relative">
@@ -153,17 +184,19 @@ export default function Booking() {
                             " />
 
                             <input
+                                type="text"
+                                placeholder="Search customer..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search customer..."
                                 className="
-                                    w-full sm:w-[240px]
-                                    pl-11 pr-4 py-3
+                                    w-full md:w-[260px]
+                                    pl-12 pr-4 py-3.5
                                     bg-[#1b1b24]
                                     border border-[#242335]
                                     rounded-2xl
-                                    text-sm
                                     outline-none
+                                    transition-all
+                                    focus:border-[#dfb34c]/30
                                 "
                             />
 
@@ -174,19 +207,30 @@ export default function Booking() {
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             className="
-                                px-4 py-3
+                                px-5 py-3.5
                                 bg-[#1b1b24]
                                 border border-[#242335]
                                 rounded-2xl
-                                text-sm
                                 outline-none
+                                focus:border-[#dfb34c]/30
                             "
                         >
 
-                            <option value="All">All Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Canceled">Canceled</option>
+                            <option value="All">
+                                All Status
+                            </option>
+
+                            <option value="Pending">
+                                Pending
+                            </option>
+
+                            <option value="Completed">
+                                Completed
+                            </option>
+
+                            <option value="Canceled">
+                                Canceled
+                            </option>
 
                         </select>
 
@@ -194,148 +238,245 @@ export default function Booking() {
 
                 </div>
 
-                {/* FORM */}
+                {/* MODAL */}
                 {showForm && (
 
-                    <form
-                        onSubmit={handleSubmit}
-                        className="
-                            mb-6
+                    <div className="
+                        fixed inset-0 z-50
+                        flex items-center justify-center
+                        bg-black/60
+                        backdrop-blur-sm
+                        p-5
+                    ">
+
+                        <div className="
+                            w-full max-w-3xl
                             bg-[#1b1b24]
                             border border-[#242335]
-                            rounded-3xl
-                            p-6
-                            grid grid-cols-1 md:grid-cols-2
-                            gap-5
-                        "
-                    >
+                            rounded-[28px]
+                            overflow-hidden
+                        ">
 
-                        <Input
-                            name="nama_customer"
-                            placeholder="Customer Name"
-                            value={form.nama_customer}
-                            onChange={handleChange}
-                        />
+                            {/* HEADER */}
+                            <div className="
+                                flex items-center justify-between
+                                px-8 py-6
+                                border-b border-[#242335]
+                            ">
 
-                        <Input
-                            name="barber"
-                            placeholder="Barber Name"
-                            value={form.barber}
-                            onChange={handleChange}
-                        />
+                                <div>
 
-                        {/* SERVICE */}
-                        <select
-                            name="layanan"
-                            value={form.layanan}
-                            onChange={(e) => {
+                                    <h2 className="text-3xl font-black">
+                                        Add Booking
+                                    </h2>
 
-                                const selected =
-                                    dataServices.find(
-                                        s => s.nama_service === e.target.value
-                                    );
+                                    <p className="text-sm text-[#8e8e9f] mt-1">
+                                        Create new booking customer
+                                    </p>
 
-                                if (!selected) return;
+                                </div>
 
-                                setForm(prev => ({
-                                    ...prev,
-                                    layanan: selected.nama_service,
-                                    harga: selected.harga
-                                }));
+                                <button
+                                    onClick={() => setShowForm(false)}
+                                    className="
+                                        w-12 h-12
+                                        rounded-2xl
+                                        bg-[#111116]
+                                        border border-[#242335]
+                                        flex items-center justify-center
+                                        hover:bg-red-500/10
+                                        hover:text-red-400
+                                        transition
+                                    "
+                                >
 
-                            }}
-                            className="
-                                px-4 py-3
-                                bg-[#111116]
-                                border border-[#242335]
-                                rounded-2xl
-                                outline-none
-                            "
-                        >
+                                    <FaTimes />
 
-                            <option value="">
-                                Select Service
-                            </option>
+                                </button>
 
-                            {dataServices
-                                .filter(s => s.status === "Aktif")
-                                .map((s) => (
+                            </div>
 
-                                    <option
-                                        key={s.id}
-                                        value={s.nama_service}
-                                    >
-                                        {s.nama_service}
+                            {/* FORM */}
+                            <form
+                                onSubmit={handleSubmit}
+                                className="
+                                    p-8
+                                    grid grid-cols-1 md:grid-cols-2
+                                    gap-5
+                                "
+                            >
+
+                                <Input
+                                    name="nama_customer"
+                                    placeholder="Customer Name"
+                                    value={form.nama_customer}
+                                    onChange={handleChange}
+                                />
+
+                                <Input
+                                    name="barber"
+                                    placeholder="Barber Name"
+                                    value={form.barber}
+                                    onChange={handleChange}
+                                />
+
+                                {/* SERVICE */}
+                                <select
+                                    name="layanan"
+                                    value={form.layanan}
+                                    onChange={(e) => {
+
+                                        const selected =
+                                            dataServices.find(
+                                                (s) =>
+                                                    s.nama_service === e.target.value
+                                            );
+
+                                        if (!selected) return;
+
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            layanan: selected.nama_service,
+                                            harga: selected.harga
+                                        }));
+
+                                    }}
+                                    className="
+                                        px-5 py-4
+                                        bg-[#111116]
+                                        border border-[#242335]
+                                        rounded-2xl
+                                        outline-none
+                                    "
+                                >
+
+                                    <option value="">
+                                        Select Service
                                     </option>
 
-                                ))}
+                                    {dataServices
+                                        .filter((s) => s.status === "Aktif")
+                                        .map((s) => (
 
-                        </select>
+                                            <option
+                                                key={s.id}
+                                                value={s.nama_service}
+                                            >
+                                                {s.nama_service}
+                                            </option>
 
-                        {/* PRICE */}
-                        <input
-                            value={form.harga}
-                            readOnly
-                            placeholder="Price"
-                            className="
-                                px-4 py-3
-                                bg-[#111116]
-                                border border-[#242335]
-                                rounded-2xl
-                                text-gray-400
-                                outline-none
-                            "
-                        />
+                                        ))}
 
-                        {/* DATE */}
-                        <input
-                            type="datetime-local"
-                            name="jadwal"
-                            value={form.jadwal}
-                            onChange={handleChange}
-                            className="
-                                px-4 py-3
-                                bg-[#111116]
-                                border border-[#242335]
-                                rounded-2xl
-                                outline-none
-                            "
-                        />
+                                </select>
 
-                        {/* STATUS */}
-                        <select
-                            name="status_booking"
-                            value={form.status_booking}
-                            onChange={handleChange}
-                            className="
-                                px-4 py-3
-                                bg-[#111116]
-                                border border-[#242335]
-                                rounded-2xl
-                                outline-none
-                            "
-                        >
+                                {/* PRICE */}
+                                <input
+                                    value={form.harga}
+                                    readOnly
+                                    placeholder="Price"
+                                    className="
+                                        px-5 py-4
+                                        bg-[#111116]
+                                        border border-[#242335]
+                                        rounded-2xl
+                                        text-gray-400
+                                        outline-none
+                                    "
+                                />
 
-                            <option>Pending</option>
-                            <option>Completed</option>
-                            <option>Canceled</option>
+                                {/* DATE */}
+                                <input
+                                    type="datetime-local"
+                                    name="jadwal"
+                                    value={form.jadwal}
+                                    onChange={handleChange}
+                                    className="
+                                        px-5 py-4
+                                        bg-[#111116]
+                                        border border-[#242335]
+                                        rounded-2xl
+                                        outline-none
+                                    "
+                                />
 
-                        </select>
+                                {/* STATUS */}
+                                <select
+                                    name="status_booking"
+                                    value={form.status_booking}
+                                    onChange={handleChange}
+                                    className="
+                                        px-5 py-4
+                                        bg-[#111116]
+                                        border border-[#242335]
+                                        rounded-2xl
+                                        outline-none
+                                    "
+                                >
 
-                        <button
-                            className="
-                                md:col-span-2
-                                bg-[#dfb34c]
-                                text-[#111116]
-                                py-3
-                                rounded-2xl
-                                font-bold
-                            "
-                        >
-                            Save Booking
-                        </button>
+                                    <option value="Pending">
+                                        Pending
+                                    </option>
 
-                    </form>
+                                    <option value="Completed">
+                                        Completed
+                                    </option>
+
+                                    <option value="Canceled">
+                                        Canceled
+                                    </option>
+
+                                </select>
+
+                                {/* BUTTON */}
+                                <div className="
+                                    md:col-span-2
+                                    flex gap-4 pt-2
+                                ">
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowForm(false)}
+                                        className="
+                                            flex-1
+                                            py-4
+                                            rounded-2xl
+                                            bg-[#111116]
+                                            border border-[#242335]
+                                            font-bold
+                                            hover:bg-[#242335]
+                                            transition
+                                        "
+                                    >
+
+                                        Cancel
+
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        className="
+                                            flex-1
+                                            py-4
+                                            rounded-2xl
+                                            bg-[#dfb34c]
+                                            text-[#111116]
+                                            font-black
+                                            hover:opacity-90
+                                            transition
+                                        "
+                                    >
+
+                                        Save Booking
+
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
 
                 )}
 
@@ -343,106 +484,283 @@ export default function Booking() {
                 <div className="
                     bg-[#1b1b24]
                     border border-[#242335]
-                    rounded-3xl
+                    rounded-[28px]
                     overflow-hidden
                 ">
 
                     <div className="overflow-x-auto">
 
-                        <table className="w-full text-sm">
+                        <table className="w-full">
 
-                            <thead className="bg-[#111116] text-gray-400">
+                            <thead>
 
-                                <tr>
+                                <tr className="
+                                    bg-[#111116]
+                                    text-[#8e8e9f]
+                                    text-xs uppercase
+                                    tracking-[2px]
+                                ">
 
-                                    <th className="p-5 text-left">
+                                    <th className="px-8 py-6 text-center">
                                         Customer
                                     </th>
 
-                                    <th className="p-5 text-left">
-                                        Barber
-                                    </th>
-
-                                    <th className="p-5 text-left">
+                                    <th className="px-6 py-6 text-left">
                                         Service
                                     </th>
 
-                                    <th className="p-5 text-left">
+                                    <th className="px-6 py-6 text-left">
+                                        Barber
+                                    </th>
+
+                                    <th className="px-6 py-6 text-left">
                                         Schedule
                                     </th>
 
-                                    <th className="p-5 text-left">
+                                    <th className="px-6 py-6 text-left">
                                         Price
                                     </th>
 
-                                    <th className="p-5 text-left">
+                                    <th className="px-6 py-6 text-center">
                                         Status
+                                    </th>
+
+                                    <th className="px-8 py-6 text-right">
+                                        Action
                                     </th>
 
                                 </tr>
 
                             </thead>
 
-                            <tbody>
+                            <tbody className="divide-y divide-[#242335]">
 
-                                {filtered.map((b) => (
+                                {filtered.map((b) => {
 
-                                    <tr
-                                        key={b.id_booking}
-                                        className="
-                                            border-t border-[#242335]
-                                            hover:bg-white/[0.02]
-                                            transition
-                                        "
-                                    >
+                                    const statusClass =
+                                        b.status_booking === "Completed"
+                                            ? "bg-green-500/15 text-green-400"
+                                            : b.status_booking === "Pending"
+                                                ? "bg-yellow-500/15 text-yellow-400"
+                                                : "bg-red-500/15 text-red-400";
 
-                                        <td className="p-5">
-                                            {b.nama_customer}
-                                        </td>
+                                    return (
 
-                                        <td className="p-5">
-                                            {b.barber}
-                                        </td>
+                                        <tr
+                                            key={b.id_booking}
+                                            className="
+                                                hover:bg-white/[0.02]
+                                                transition-all duration-300
+                                            "
+                                        >
 
-                                        <td className="p-5">
-                                            {b.layanan}
-                                        </td>
+                                            {/* CUSTOMER */}
+                                            <td className="px-8 py-6">
 
-                                        <td className="p-5">
-                                            {b.jadwal}
-                                        </td>
+                                                <div className="
+                                                    flex items-center gap-4
+                                                ">
 
-                                        <td className="p-5 text-[#dfb34c] font-semibold">
-                                            Rp {b.harga.toLocaleString()}
-                                        </td>
+                                                    <div className="
+                                                        w-14 h-14
+                                                        rounded-2xl
+                                                        bg-[#242335]
+                                                        flex items-center justify-center
+                                                        text-[#dfb34c]
+                                                        text-xl
+                                                    ">
 
-                                        <td className="p-5">
+                                                        <FaUserCircle />
 
-                                            <span className={`
-                                                px-3 py-1 rounded-full text-xs font-semibold
-                                                ${b.status_booking === "Completed"
-                                                    ? "bg-green-500/20 text-green-400"
-                                                    : b.status_booking === "Pending"
-                                                        ? "bg-yellow-500/20 text-yellow-400"
-                                                        : "bg-red-500/20 text-red-400"
-                                                }
-                                            `}>
+                                                    </div>
 
-                                                {b.status_booking}
+                                                    <div>
 
-                                            </span>
+                                                        <h3 className="
+                                                            font-bold text-white
+                                                        ">
+                                                            {b.nama_customer}
+                                                        </h3>
 
-                                        </td>
+                                                        <p className="
+                                                            text-xs
+                                                            text-[#8e8e9f]
+                                                            mt-1
+                                                        ">
+                                                            ID : #{b.id_booking}
+                                                        </p>
 
-                                    </tr>
+                                                    </div>
 
-                                ))}
+                                                </div>
+
+                                            </td>
+
+                                            {/* SERVICE */}
+                                            <td className="px-6 py-6">
+
+                                                <div>
+
+                                                    <h4 className="font-semibold">
+                                                        {b.layanan}
+                                                    </h4>
+
+                                                    <p className="
+                                                        text-xs
+                                                        text-[#8e8e9f]
+                                                        mt-1
+                                                    ">
+                                                        Premium Service
+                                                    </p>
+
+                                                </div>
+
+                                            </td>
+
+                                            {/* BARBER */}
+                                            <td className="px-6 py-6">
+
+                                                <span className="
+                                                    text-gray-300
+                                                    font-medium
+                                                ">
+                                                    {b.barber}
+                                                </span>
+
+                                            </td>
+
+                                            {/* DATE */}
+                                            <td className="px-6 py-6">
+
+                                                <div className="
+                                                    flex items-center gap-2
+                                                    text-sm text-gray-300
+                                                ">
+
+                                                    <FaClock className="
+                                                        text-[#dfb34c]
+                                                    " />
+
+                                                    {b.jadwal}
+
+                                                </div>
+
+                                            </td>
+
+                                            {/* PRICE */}
+                                            <td className="
+                                                px-6 py-6
+                                                font-black
+                                                text-[#dfb34c]
+                                            ">
+                                                Rp {b.harga.toLocaleString()}
+                                            </td>
+
+                                            {/* STATUS */}
+                                            <td className="
+                                                px-6 py-6
+                                                text-center
+                                            ">
+
+                                                <span className={`
+                                                    inline-flex items-center gap-2
+                                                    px-4 py-2
+                                                    rounded-full
+                                                    text-xs font-black uppercase
+                                                    ${statusClass}
+                                                `}>
+
+                                                    {b.status_booking === "Completed"
+                                                        ? <FaCheckCircle />
+                                                        : b.status_booking === "Pending"
+                                                            ? <FaClock />
+                                                            : <FaTimesCircle />
+                                                    }
+
+                                                    {b.status_booking}
+
+                                                </span>
+
+                                            </td>
+
+                                            {/* ACTION */}
+                                            <td className="
+                                                px-8 py-6
+                                                text-right
+                                            ">
+
+                                                <Link
+                                                    to={`/booking/${b.id_booking}`}
+                                                    className="
+                                                        inline-flex items-center gap-2
+                                                        px-5 py-2.5
+                                                        rounded-xl
+                                                        border border-[#dfb34c]/20
+                                                        text-[#dfb34c]
+                                                        hover:bg-[#dfb34c]
+                                                        hover:text-[#111116]
+                                                        transition-all duration-300
+                                                        font-bold text-sm
+                                                    "
+                                                >
+
+                                                    <FaEye />
+
+                                                    Detail
+
+                                                </Link>
+
+                                            </td>
+
+                                        </tr>
+
+                                    );
+
+                                })}
 
                             </tbody>
 
                         </table>
 
                     </div>
+
+                    {/* EMPTY */}
+                    {filtered.length === 0 && (
+
+                        <div className="
+                            py-24
+                            text-center
+                        ">
+
+                            <div className="
+                                flex justify-center
+                                text-[#242335]
+                                text-7xl mb-5
+                            ">
+
+                                <FaUserCircle />
+
+                            </div>
+
+                            <h2 className="
+                                text-2xl
+                                font-bold
+                                text-gray-400
+                                mb-2
+                            ">
+                                No Booking Found
+                            </h2>
+
+                            <p className="
+                                text-sm
+                                text-[#8e8e9f]
+                            ">
+                                Try changing your search keyword.
+                            </p>
+
+                        </div>
+
+                    )}
 
                 </div>
 
@@ -455,7 +773,11 @@ export default function Booking() {
 }
 
 // PAGE HEADER
-function PageHeader({ title, breadcrumb, children }) {
+function PageHeader({
+    title,
+    breadcrumb,
+    children
+}) {
 
     return (
 
@@ -463,22 +785,29 @@ function PageHeader({ title, breadcrumb, children }) {
 
             <div className="
                 flex flex-col lg:flex-row
-                lg:justify-between
-                lg:items-center
+                lg:items-center lg:justify-between
                 gap-5
                 bg-[#1b1b24]
                 border border-[#242335]
-                rounded-3xl
-                px-8 py-7
+                rounded-[28px]
+                px-6 py-5
             ">
 
                 <div>
 
-                    <h1 className="text-4xl font-black">
+                    <h1 className="
+                        text-3xl lg:text-4xl
+                        font-black
+                        leading-none
+                    ">
                         {title}
                     </h1>
 
-                    <p className="text-sm text-[#8e8e9f] mt-2">
+                    <p className="
+                        text-sm
+                        text-[#8e8e9f]
+                        mt-3
+                    ">
                         {breadcrumb.join(" / ")}
                     </p>
 
@@ -507,16 +836,20 @@ function Input({
     return (
 
         <input
+            required
             name={name}
             placeholder={placeholder}
             value={value}
             onChange={onChange}
             className="
-                px-4 py-3
+                w-full
+                px-5 py-4
                 bg-[#111116]
                 border border-[#242335]
                 rounded-2xl
                 outline-none
+                transition-all
+                focus:border-[#dfb34c]/30
             "
         />
 

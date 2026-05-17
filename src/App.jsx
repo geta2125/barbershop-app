@@ -8,7 +8,9 @@ function App() {
   // LAZY IMPORT
   const Dashboard = React.lazy(() => import("./pages/Dashboard"));
   const Booking = React.lazy(() => import("./pages/Booking"));
+  const BookingDetail = React.lazy(() => import("./pages/BookingDetail"));
   const Services = React.lazy(() => import("./pages/Services"));
+  const ServicesDetail = React.lazy(() => import("./pages/ServicesDetail"));
 
   const Login = React.lazy(() => import("./pages/auth/Login"));
   const Register = React.lazy(() => import("./pages/auth/Register"));
@@ -32,7 +34,9 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/booking" element={<Booking />} />
+          <Route path="/booking/:id" element={<BookingDetail />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/services/:id" element={<ServicesDetail />} />
         </Route>
 
       </Routes>
