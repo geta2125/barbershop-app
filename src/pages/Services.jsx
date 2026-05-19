@@ -14,9 +14,21 @@ import { Link } from "react-router-dom";
 
 import dataServices from "../data/dataservices.json";
 
+import Container from "../components/Container";
+import PageHeader from "../components/PageHeader";
+import InputField from "../components/InputField";
+import SearchBar from "../components/SearchBar";
+import Modal from "../components/Modal";
+import Badge from "../components/Badge";
+import Footer from "../components/Footer";
+import Avatar from "../components/Avatar";
+import EmptyState from "../components/EmptyState";
+import StatsCard from "../components/StatsCard";
+
 export default function Services() {
 
     const [search, setSearch] = useState("");
+
     const [statusFilter, setStatusFilter] = useState("All");
 
     const [showForm, setShowForm] = useState(false);
@@ -87,10 +99,15 @@ export default function Services() {
 
     return (
 
-        <div className="w-full min-h-screen bg-[#0f0f17] text-white overflow-x-hidden">
+        <div className="
+            w-full
+            min-h-screen
+            bg-[#0f0f17]
+            text-white
+            overflow-x-hidden
+        ">
 
-            {/* WRAPPER */}
-            <div className="w-full px-5 lg:px-7 py-5">
+            <Container>
 
                 {/* HEADER */}
                 <PageHeader
@@ -117,7 +134,62 @@ export default function Services() {
 
                 </PageHeader>
 
-                {/* TOP ACTION */}
+                {/* PROFILE */}
+                <div className="
+                    flex items-center gap-3
+                    mb-6
+                ">
+
+                    <Avatar name="Geta" />
+
+                    <div>
+
+                        <h3 className="font-bold">
+                            Geta Dewi
+                        </h3>
+
+                        <p className="text-sm text-gray-500">
+                            Service Management
+                        </p>
+
+                    </div>
+
+                </div>
+
+                {/* STATS */}
+                <div className="
+                    grid grid-cols-1
+                    md:grid-cols-3
+                    gap-4
+                    mb-6
+                ">
+
+                    <StatsCard
+                        title="Total Services"
+                        value={services.length}
+                    />
+
+                    <StatsCard
+                        title="Active Services"
+                        value={
+                            services.filter(
+                                (s) => s.status === "Aktif"
+                            ).length
+                        }
+                    />
+
+                    <StatsCard
+                        title="Inactive Services"
+                        value={
+                            services.filter(
+                                (s) => s.status === "Nonaktif"
+                            ).length
+                        }
+                    />
+
+                </div>
+
+                {/* ACTION */}
                 <div className="
                     flex flex-col lg:flex-row
                     justify-between
@@ -126,31 +198,11 @@ export default function Services() {
                 ">
 
                     {/* SEARCH */}
-                    <div className="relative">
-
-                        <FaSearch className="
-                            absolute left-4 top-1/2
-                            -translate-y-1/2
-                            text-gray-500
-                        " />
-
-                        <input
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search service..."
-                            className="
-                                w-full lg:w-[260px]
-                                pl-11 pr-4 py-3
-                                bg-[#1b1b24]
-                                border border-[#242335]
-                                rounded-2xl
-                                outline-none
-                                focus:border-[#dfb34c]/20
-                                transition-all
-                            "
-                        />
-
-                    </div>
+                    <SearchBar
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search service..."
+                    />
 
                     <div className="flex gap-3 flex-wrap">
 
@@ -164,7 +216,6 @@ export default function Services() {
                                 border border-[#242335]
                                 rounded-2xl
                                 outline-none
-                                focus:border-[#dfb34c]/20
                             "
                         >
 
@@ -194,7 +245,6 @@ export default function Services() {
                                 rounded-2xl
                                 hover:opacity-90
                                 transition-all duration-300
-                                shadow-[0_10px_25px_rgba(223,179,76,0.15)]
                             "
                         >
 
@@ -208,282 +258,259 @@ export default function Services() {
 
                 </div>
 
-                {/* MODAL FORM */}
-                {showForm && (
+                {/* MODAL */}
+                <Modal show={showForm}>
 
+                    {/* HEADER */}
                     <div className="
-                        fixed inset-0
-                        z-50
-                        flex items-center justify-center
-                        bg-black/70
-                        backdrop-blur-sm
-                        p-5
+                        flex items-center justify-between
+                        mb-6
                     ">
 
-                        <div className="
-                            w-full max-w-2xl
-                            bg-[#1b1b24]
-                            border border-[#242335]
-                            rounded-[32px]
-                            overflow-hidden
-                            animate-fadeIn
-                        ">
+                        <div>
 
-                            {/* HEADER */}
-                            <div className="
-                                flex items-center justify-between
-                                px-7 py-6
-                                border-b border-[#242335]
+                            <h2 className="
+                                text-3xl
+                                font-black
                             ">
+                                Add Service
+                            </h2>
 
-                                <div>
-
-                                    <h2 className="
-                                        text-3xl
-                                        font-black
-                                    ">
-                                        Add Service
-                                    </h2>
-
-                                    <p className="
-                                        text-sm
-                                        text-[#8e8e9f]
-                                        mt-1
-                                    ">
-                                        Tambahkan layanan baru GroomGold
-                                    </p>
-
-                                </div>
-
-                                <button
-                                    onClick={() => setShowForm(false)}
-                                    className="
-                                        w-11 h-11
-                                        rounded-2xl
-                                        bg-[#14141d]
-                                        border border-[#242335]
-                                        flex items-center justify-center
-                                        hover:bg-red-500/10
-                                        hover:text-red-400
-                                        transition-all
-                                    "
-                                >
-
-                                    <FaTimes />
-
-                                </button>
-
-                            </div>
-
-                            {/* FORM */}
-                            <form
-                                onSubmit={handleSubmit}
-                                className="
-                                    p-7
-                                    grid grid-cols-1 md:grid-cols-2
-                                    gap-5
-                                "
-                            >
-
-                                <Input
-                                    label="Service Name"
-                                    name="nama_service"
-                                    value={form.nama_service}
-                                    onChange={handleChange}
-                                    placeholder="Hair Cut"
-                                />
-
-                                <Input
-                                    label="Category"
-                                    name="kategori"
-                                    value={form.kategori}
-                                    onChange={handleChange}
-                                    placeholder="Haircut"
-                                />
-
-                                <Input
-                                    label="Duration"
-                                    name="durasi"
-                                    type="number"
-                                    value={form.durasi}
-                                    onChange={handleChange}
-                                    placeholder="30"
-                                />
-
-                                <Input
-                                    label="Price"
-                                    name="harga"
-                                    type="number"
-                                    value={form.harga}
-                                    onChange={handleChange}
-                                    placeholder="50000"
-                                />
-
-                                {/* STATUS */}
-                                <div>
-
-                                    <label className="
-                                        text-xs
-                                        font-bold
-                                        text-[#8e8e9f]
-                                        uppercase
-                                        tracking-[1px]
-                                        mb-2
-                                        block
-                                    ">
-                                        Status
-                                    </label>
-
-                                    <select
-                                        name="status"
-                                        value={form.status}
-                                        onChange={handleChange}
-                                        className="
-                                            w-full
-                                            px-5 py-4
-                                            bg-[#14141d]
-                                            border border-[#242335]
-                                            rounded-2xl
-                                            outline-none
-                                            focus:border-[#dfb34c]/20
-                                        "
-                                    >
-
-                                        <option value="Aktif">
-                                            Aktif
-                                        </option>
-
-                                        <option value="Nonaktif">
-                                            Nonaktif
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-                                {/* IMAGE */}
-                                <div>
-
-                                    <label className="
-                                        text-xs
-                                        font-bold
-                                        text-[#8e8e9f]
-                                        uppercase
-                                        tracking-[1px]
-                                        mb-2
-                                        block
-                                    ">
-                                        Image Name
-                                    </label>
-
-                                    <div className="relative">
-
-                                        <FaImage className="
-                                            absolute left-4 top-1/2
-                                            -translate-y-1/2
-                                            text-gray-500
-                                        " />
-
-                                        <input
-                                            type="text"
-                                            name="gambar"
-                                            value={form.gambar}
-                                            onChange={handleChange}
-                                            placeholder="fadecut.jpg"
-                                            className="
-                                                w-full
-                                                pl-11 pr-4 py-4
-                                                bg-[#14141d]
-                                                border border-[#242335]
-                                                rounded-2xl
-                                                outline-none
-                                                focus:border-[#dfb34c]/20
-                                            "
-                                            required
-                                        />
-
-                                    </div>
-
-                                </div>
-
-                                {/* PREVIEW */}
-                                {form.gambar && (
-
-                                    <div className="md:col-span-2">
-
-                                        <div className="
-                                            h-[220px]
-                                            rounded-[24px]
-                                            overflow-hidden
-                                            border border-[#242335]
-                                        ">
-
-                                            <img
-                                                src={`/img/services/${form.gambar}`}
-                                                alt="preview"
-                                                className="
-                                                    w-full h-full
-                                                    object-cover
-                                                "
-                                            />
-
-                                        </div>
-
-                                    </div>
-
-                                )}
-
-                                {/* BUTTON */}
-                                <div className="
-                                    md:col-span-2
-                                    flex gap-4
-                                    pt-3
-                                ">
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowForm(false)}
-                                        className="
-                                            flex-1
-                                            py-4
-                                            rounded-2xl
-                                            bg-[#14141d]
-                                            border border-[#242335]
-                                            font-bold
-                                            hover:bg-[#242335]
-                                            transition-all
-                                        "
-                                    >
-
-                                        Cancel
-
-                                    </button>
-
-                                    <button
-                                        type="submit"
-                                        className="
-                                            flex-1
-                                            py-4
-                                            rounded-2xl
-                                            bg-[#dfb34c]
-                                            text-[#111116]
-                                            font-black
-                                            hover:opacity-90
-                                            transition-all duration-300
-                                        "
-                                    >
-
-                                        Save Service
-
-                                    </button>
-
-                                </div>
-
-                            </form>
+                            <p className="
+                                text-sm
+                                text-[#8e8e9f]
+                                mt-1
+                            ">
+                                Tambahkan layanan baru GroomGold
+                            </p>
 
                         </div>
 
+                        <button
+                            onClick={() => setShowForm(false)}
+                            className="
+                                w-11 h-11
+                                rounded-2xl
+                                bg-[#14141d]
+                                border border-[#242335]
+                                flex items-center justify-center
+                            "
+                        >
+
+                            <FaTimes />
+
+                        </button>
+
                     </div>
+
+                    {/* FORM */}
+                    <form
+                        onSubmit={handleSubmit}
+                        className="
+                            grid grid-cols-1
+                            md:grid-cols-2
+                            gap-5
+                        "
+                    >
+
+                        <InputField
+                            label="Service Name"
+                            name="nama_service"
+                            value={form.nama_service}
+                            onChange={handleChange}
+                            placeholder="Hair Cut"
+                        />
+
+                        <InputField
+                            label="Category"
+                            name="kategori"
+                            value={form.kategori}
+                            onChange={handleChange}
+                            placeholder="Haircut"
+                        />
+
+                        <InputField
+                            label="Duration"
+                            name="durasi"
+                            type="number"
+                            value={form.durasi}
+                            onChange={handleChange}
+                            placeholder="30"
+                        />
+
+                        <InputField
+                            label="Price"
+                            name="harga"
+                            type="number"
+                            value={form.harga}
+                            onChange={handleChange}
+                            placeholder="50000"
+                        />
+
+                        {/* STATUS */}
+                        <div>
+
+                            <label className="
+                                text-xs
+                                font-bold
+                                text-[#8e8e9f]
+                                uppercase
+                                tracking-[1px]
+                                mb-2
+                                block
+                            ">
+                                Status
+                            </label>
+
+                            <select
+                                name="status"
+                                value={form.status}
+                                onChange={handleChange}
+                                className="
+                                    w-full
+                                    px-5 py-4
+                                    bg-[#14141d]
+                                    border border-[#242335]
+                                    rounded-2xl
+                                    outline-none
+                                "
+                            >
+
+                                <option value="Aktif">
+                                    Aktif
+                                </option>
+
+                                <option value="Nonaktif">
+                                    Nonaktif
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        {/* IMAGE */}
+                        <div>
+
+                            <label className="
+                                text-xs
+                                font-bold
+                                text-[#8e8e9f]
+                                uppercase
+                                tracking-[1px]
+                                mb-2
+                                block
+                            ">
+                                Image Name
+                            </label>
+
+                            <div className="relative">
+
+                                <FaImage className="
+                                    absolute left-4 top-1/2
+                                    -translate-y-1/2
+                                    text-gray-500
+                                " />
+
+                                <input
+                                    type="text"
+                                    name="gambar"
+                                    value={form.gambar}
+                                    onChange={handleChange}
+                                    placeholder="fadecut.jpg"
+                                    className="
+                                        w-full
+                                        pl-11 pr-4 py-4
+                                        bg-[#14141d]
+                                        border border-[#242335]
+                                        rounded-2xl
+                                        outline-none
+                                    "
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+                        {/* PREVIEW */}
+                        {form.gambar && (
+
+                            <div className="md:col-span-2">
+
+                                <div className="
+                                    h-[220px]
+                                    rounded-[24px]
+                                    overflow-hidden
+                                    border border-[#242335]
+                                ">
+
+                                    <img
+                                        src={`/img/services/${form.gambar}`}
+                                        alt="preview"
+                                        className="
+                                            w-full h-full
+                                            object-cover
+                                        "
+                                    />
+
+                                </div>
+
+                            </div>
+
+                        )}
+
+                        {/* BUTTON */}
+                        <div className="
+                            md:col-span-2
+                            flex gap-4
+                            pt-3
+                        ">
+
+                            <button
+                                type="button"
+                                onClick={() => setShowForm(false)}
+                                className="
+                                    flex-1
+                                    py-4
+                                    rounded-2xl
+                                    bg-[#14141d]
+                                    border border-[#242335]
+                                    font-bold
+                                "
+                            >
+
+                                Cancel
+
+                            </button>
+
+                            <button
+                                type="submit"
+                                className="
+                                    flex-1
+                                    py-4
+                                    rounded-2xl
+                                    bg-[#dfb34c]
+                                    text-[#111116]
+                                    font-black
+                                "
+                            >
+
+                                Save Service
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </Modal>
+
+                {/* EMPTY */}
+                {filtered.length === 0 && (
+
+                    <EmptyState
+                        title="No service found"
+                    />
 
                 )}
 
@@ -515,7 +542,6 @@ export default function Services() {
                             <div className="
                                 h-[190px]
                                 overflow-hidden
-                                relative
                             ">
 
                                 <img
@@ -534,19 +560,34 @@ export default function Services() {
                             {/* CONTENT */}
                             <div className="p-5">
 
-                                <Link
-                                    to={`/services/${s.id}`}
-                                    className="
-                                        text-xl
-                                        font-black
-                                        mb-1
-                                        block
-                                        hover:text-[#dfb34c]
-                                        transition-all duration-300
-                                    "
-                                >
-                                    {s.nama_service}
-                                </Link>
+                                <div className="
+                                    flex justify-between
+                                    items-start
+                                    mb-3
+                                ">
+
+                                    <Link
+                                        to={`/services/${s.id}`}
+                                        className="
+                                            text-xl
+                                            font-black
+                                            hover:text-[#dfb34c]
+                                        "
+                                    >
+                                        {s.nama_service}
+                                    </Link>
+
+                                    <Badge
+                                        type={
+                                            s.status === "Aktif"
+                                                ? "success"
+                                                : "danger"
+                                        }
+                                    >
+                                        {s.status}
+                                    </Badge>
+
+                                </div>
 
                                 <p className="
                                     text-sm
@@ -576,9 +617,7 @@ export default function Services() {
                                         rounded-xl
                                         bg-blue-500/15
                                         text-blue-400
-                                        hover:bg-blue-500/25
                                         flex items-center justify-center
-                                        transition-all duration-300
                                     ">
 
                                         <FaEdit />
@@ -590,9 +629,7 @@ export default function Services() {
                                         rounded-xl
                                         bg-red-500/15
                                         text-red-400
-                                        hover:bg-red-500/25
                                         flex items-center justify-center
-                                        transition-all duration-300
                                     ">
 
                                         <FaTrash />
@@ -609,111 +646,10 @@ export default function Services() {
 
                 </div>
 
-            </div>
+                {/* FOOTER */}
+                <Footer />
 
-        </div>
-
-    );
-
-}
-
-// PAGE HEADER
-function PageHeader({
-    title,
-    breadcrumb,
-    children
-}) {
-
-    return (
-
-        <div className="mb-7">
-
-            <div className="
-                flex flex-col lg:flex-row
-                lg:justify-between
-                lg:items-center
-                gap-5
-                bg-[#1b1b24]
-                border border-[#242335]
-                rounded-[28px]
-                px-7 py-6
-            ">
-
-                <div>
-
-                    <h1 className="
-                        text-3xl lg:text-4xl
-                        font-black
-                    ">
-                        {title}
-                    </h1>
-
-                    <p className="
-                        text-sm
-                        text-[#8e8e9f]
-                        mt-2
-                    ">
-                        {breadcrumb.join(" / ")}
-                    </p>
-
-                </div>
-
-                <div>
-                    {children}
-                </div>
-
-            </div>
-
-        </div>
-
-    );
-
-}
-
-// INPUT
-function Input({
-    label,
-    name,
-    value,
-    onChange,
-    placeholder,
-    type = "text"
-}) {
-
-    return (
-
-        <div>
-
-            <label className="
-                text-xs
-                font-bold
-                text-[#8e8e9f]
-                uppercase
-                tracking-[1px]
-                mb-2
-                block
-            ">
-                {label}
-            </label>
-
-            <input
-                type={type}
-                name={name}
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                className="
-                    w-full
-                    px-5 py-4
-                    bg-[#14141d]
-                    border border-[#242335]
-                    rounded-2xl
-                    outline-none
-                    focus:border-[#dfb34c]/20
-                    transition-all
-                "
-                required
-            />
+            </Container>
 
         </div>
 
