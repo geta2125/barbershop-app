@@ -11,6 +11,8 @@ function App() {
   const BookingDetail = React.lazy(() => import("./pages/BookingDetail"));
   const Services = React.lazy(() => import("./pages/Services"));
   const ServicesDetail = React.lazy(() => import("./pages/ServicesDetail"));
+  const Customers = React.lazy(() => import("./pages/Customers"));
+  const CustomersDetail = React.lazy(() => import("./pages/CustomersDetail"));
 
   const Login = React.lazy(() => import("./pages/auth/Login"));
   const Register = React.lazy(() => import("./pages/auth/Register"));
@@ -37,6 +39,8 @@ function App() {
           <Route path="/booking/:id" element={<BookingDetail />} />
           <Route path="/services" element={<Services />} />
           <Route path="/services/:id" element={<ServicesDetail />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/customers/:id" element={<CustomersDetail />} />
         </Route>
 
       </Routes>

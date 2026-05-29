@@ -24,11 +24,12 @@ export default function Login() {
         setError("");
 
         setTimeout(() => {
+            // Logika login tiruan Anda
             if (dataForm.email === "geta@gmail.com" && dataForm.password === "2125") {
                 localStorage.setItem("user", JSON.stringify(dataForm));
                 navigate("/");
             } else {
-                setError("Email atau password salah");
+                setError("Email atau password yang Anda masukkan salah.");
             }
             setLoading(false);
         }, 1000);
@@ -38,8 +39,8 @@ export default function Login() {
         <div>
 
             {/* HEADER */}
-            <h2 className="text-3xl font-bold text-white mb-2">
-                Welcome Back 👋
+            <h2 className="text-3xl font-bold text-white mb-1.5">
+                Welcome Back
             </h2>
 
             <p className="text-sm text-[#D3CDC3]/60 mb-8">
@@ -66,23 +67,23 @@ export default function Login() {
 
                 {/* EMAIL */}
                 <div>
-                    <label className="text-xs text-[#D3CDC3]/70">
-                        Email
+                    <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider block mb-1.5">
+                        Email Address
                     </label>
                     <input
                         name="email"
                         type="email"
                         onChange={handleChange}
-                        className="w-full mt-1 px-4 py-2.5 bg-[#161616] border border-white/10 rounded-lg focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/20 outline-none"
+                        className="w-full mt-1 px-4 py-2.5 bg-[#161616] border border-white/10 rounded-lg focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/20 outline-none transition"
                         placeholder="example@email.com"
                     />
                 </div>
 
                 {/* PASSWORD */}
                 <div>
-                    <div className="flex justify-between text-xs text-[#D3CDC3]/70">
-                        <label>Password</label>
-                        <span className="text-[#A87C2D] cursor-pointer hover:underline">
+                    <div className="flex justify-between items-center mb-1.5">
+                        <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider">Password</label>
+                        <span className="text-[#A87C2D] text-xs cursor-pointer hover:underline">
                             Forgot Password?
                         </span>
                     </div>
@@ -91,7 +92,7 @@ export default function Login() {
                         name="password"
                         type="password"
                         onChange={handleChange}
-                        className="w-full mt-1 px-4 py-2.5 bg-[#161616] border border-white/10 rounded-lg focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/20 outline-none"
+                        className="w-full mt-1 px-4 py-2.5 bg-[#161616] border border-white/10 rounded-lg focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/20 outline-none transition"
                         placeholder="********"
                     />
                 </div>
@@ -99,9 +100,13 @@ export default function Login() {
                 {/* BUTTON */}
                 <button
                     type="submit"
-                    className="w-full bg-[#A87C2D] hover:bg-[#BE9359] text-black font-semibold py-2.5 rounded-lg transition"
+                    className="w-full bg-[#A87C2D] hover:bg-[#c2923c] text-black font-semibold py-2.5 rounded-lg transition transform active:scale-[0.99]"
                 >
-                    Sign in
+                    {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <AiOutlineLoading3Quarters className="animate-spin text-white" /> Loading...
+                        </span>
+                    ) : "Sign in"}
                 </button>
 
                 {/* DIVIDER */}

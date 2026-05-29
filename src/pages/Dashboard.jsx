@@ -40,57 +40,60 @@ import ChartCard from "../components/ChartCard";
 export default function Dashboard() {
 
     const [stats, setStats] = useState({
-        booking: 202,
-        canceled: 56,
-        revenue: 1498000,
-        customers: 5614,
+        customers: 800,
+        members: 520,
+        booking: 1245,
+        revenue: 7500,
+        active: 650,
+        inactive: 150,
     });
 
     // LINE CHART
     const lineData = [
-        { name: "FEB", value: 30 },
-        { name: "MAR", value: 40 },
-        { name: "APR", value: 35 },
-        { name: "MAY", value: 55 },
-        { name: "JUN", value: 50 },
-        { name: "JUL", value: 70 },
-        { name: "AUG", value: 65 },
-        { name: "SEP", value: 80 },
-        { name: "OCT", value: 78 },
-        { name: "NOV", value: 95 },
-        { name: "DEC", value: 120 },
+        { name: "Jan", value: 120 },
+        { name: "Feb", value: 145 },
+        { name: "Mar", value: 180 },
+        { name: "Apr", value: 220 },
+        { name: "Mei", value: 250 },
+        { name: "Jun", value: 280 },
+        { name: "Jul", value: 310 },
     ];
 
     // PIE CHART
     const statsData = [
         {
-            name: "User Type 1",
-            value: stats.customers,
-            color: "#dfb34c"
+            name: "Silver",
+            value: 300,
+            color: "#BE9359"
         },
         {
-            name: "User Type 2",
-            value: 1256,
-            color: "#e1cc98"
+            name: "Gold",
+            value: 180,
+            color: "#E9C664"
         },
         {
-            name: "User Type 3",
-            value: 800,
-            color: "#383747"
+            name: "Platinum",
+            value: 40,
+            color: "#FFFFFF"
+        },
+        {
+            name: "Non Member",
+            value: 280,
+            color: "#979797"
         },
     ];
 
     // BAR CHART
     const barData = [
         {
-            name: "Expense",
-            value: 450,
-            color: "#e1cc98"
+            name: "Cash",
+            value: 320,
+            color: "#BE9359"
         },
         {
-            name: "Revenue",
-            value: 920,
-            color: "#dfb34c"
+            name: "QRIS",
+            value: 480,
+            color: "#E9C664"
         }
     ];
 
@@ -177,18 +180,18 @@ export default function Dashboard() {
                 ">
 
                     <StatsCard
-                        title="Today's Revenue"
-                        value="$12,450"
+                        title="Total Customer"
+                        value="800"
                     />
 
                     <StatsCard
-                        title="New Customer"
-                        value="245"
+                        title="Total Member"
+                        value="520"
                     />
 
                     <StatsCard
                         title="Total Booking"
-                        value="1,245"
+                        value="1245"
                     />
 
                 </div>
@@ -212,37 +215,37 @@ export default function Dashboard() {
                         ">
 
                             <Card
-                                title="Order"
-                                value={stats.booking}
-                                subValue="$ 2.5"
-                                icon={<FaCut />}
+                                title="Customer Aktif"
+                                value={stats.active}
+                                subValue="81%"
+                                icon={<FaUsers />}
                             />
 
                             <Card
-                                title="Approved"
-                                value={stats.canceled}
-                                subValue="$ 3.6"
+                                title="Customer Nonaktif"
+                                value={stats.inactive}
+                                subValue="19%"
                                 icon={<FaTimesCircle />}
                             />
 
                             <Card
-                                title="Month Total"
-                                value="25643"
-                                subValue="$ 5.2"
+                                title="Total Member"
+                                value={stats.members}
+                                subValue="65%"
                                 icon={<FaUsers />}
                             />
 
                             <Card
                                 title="Revenue"
-                                value={`$ ${(stats.revenue / 1000).toLocaleString()}`}
-                                subValue="$ 3.6"
+                                value={`Rp ${stats.revenue.toLocaleString()}`}
+                                subValue="+12%"
                                 icon={<FaDollarSign />}
                             />
 
                         </div>
 
                         {/* SALES */}
-                        <ChartCard title="Sales Dynamics">
+                        <ChartCard title="Booking Bulanan">
 
                             <div className="
                                 flex justify-between
@@ -258,7 +261,7 @@ export default function Dashboard() {
 
                                     <FaChartLine className="text-[#dfb34c]" />
 
-                                    Sales Dynamics
+                                    Booking Bulanan
 
                                 </h2>
 
@@ -349,7 +352,7 @@ export default function Dashboard() {
                                     text-xl
                                     font-bold
                                 ">
-                                    Users
+                                    Membership Distribution
                                 </h2>
 
                                 <Badge type="warning">

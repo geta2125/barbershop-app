@@ -1,34 +1,46 @@
+import { Link } from "react-router-dom";
+import { HiArrowLeft } from "react-icons/hi2";
+
 export default function Forgot() {
     return (
         <div>
-            <h2 className="text-2xl font-semibold text-[#D3CDC3] mb-2 text-center">
-                Reset Password
-            </h2>
+            {/* HEADER */}
+            <div className="mb-6">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-1">
+                    Reset Password
+                </h2>
+                <p className="text-sm text-[#D3CDC3]/60">
+                    Enter your email address and we'll send you a link to reset your password.
+                </p>
+            </div>
 
-            <p className="text-sm text-[#D3CDC3]/60 mb-6 text-center">
-                Enter your email to receive reset link
-            </p>
-
-            <form>
-                <div className="mb-5">
-                    <label className="block text-sm text-[#D3CDC3]/70 mb-1">
+            <form className="space-y-5">
+                <div>
+                    <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider block mb-1.5">
                         Email Address
                     </label>
                     <input
                         type="email"
-                        className="w-full px-4 py-2 bg-[#222323] border border-[#A87C2D] rounded-lg 
-                        text-[#D3CDC3] placeholder-[#D3CDC3]/60 
-                        focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/30 outline-none"
+                        required
+                        className="w-full px-4 py-3 bg-[#161616] border border-white/10 rounded-xl text-[#D3CDC3] placeholder-[#D3CDC3]/30 focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/10 outline-none transition"
                         placeholder="you@example.com"
                     />
                 </div>
 
                 <button
                     type="submit"
-                    className="w-full bg-[#A87C2D] hover:bg-[#641824] text-white font-semibold py-2 rounded-lg transition shadow-md"
+                    className="w-full bg-[#A87C2D] hover:bg-[#c2923c] text-black font-bold py-3 rounded-xl transition shadow-lg shadow-[#A87C2D]/10"
                 >
-                    Send Link
+                    Send Reset Link
                 </button>
+
+                {/* BACK TO LOGIN */}
+                <div className="text-center pt-2">
+                    <Link to="/login" className="inline-flex items-center gap-2 text-sm text-[#D3CDC3]/50 hover:text-[#A87C2D] transition group">
+                        <HiArrowLeft className="group-hover:-translate-x-1 transition" />
+                        Back to sign in
+                    </Link>
+                </div>
             </form>
         </div>
     );
