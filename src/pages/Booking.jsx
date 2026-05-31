@@ -4,11 +4,17 @@ import {
     FaCalendarAlt,
     FaUserCircle,
     FaClock,
-    FaCheckCircle,
-    FaTimesCircle,
     FaEye,
     FaTimes
 } from "react-icons/fa";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 import { useState } from "react";
 
@@ -38,6 +44,10 @@ export default function Booking() {
     const [bookings, setBookings] = useState(dataBooking);
 
     const [showForm, setShowForm] = useState(false);
+
+    // PAGINATION
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     // GET DATE
     const getNow = () => {
@@ -118,6 +128,15 @@ export default function Booking() {
         return matchSearch && matchStatus;
 
     });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+
+    const currentData = filtered.slice(
+        startIndex,
+        startIndex + itemsPerPage
+    );
 
     return (
 
@@ -579,7 +598,7 @@ export default function Booking() {
                         ]}
                     >
 
-                        {filtered.map((b) => {
+                        {currentData.map((b) => {
 
                             const badgeType =
                                 b.status_booking === "Completed"
@@ -735,6 +754,53 @@ export default function Booking() {
 
                     )}
 
+                </div>
+
+                <div className="flex justify-center mt-6">
+                    <Pagination>
+                        <PaginationContent>
+
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (currentPage > 1) {
+                                            setCurrentPage(currentPage - 1);
+                                        }
+                                    }}
+                                />
+                            </PaginationItem>
+
+                            {[...Array(totalPages)].map((_, index) => (
+                                <PaginationItem key={index}>
+                                    <PaginationLink
+                                        href="#"
+                                        isActive={currentPage === index + 1}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setCurrentPage(index + 1);
+                                        }}
+                                    >
+                                        {index + 1}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            ))}
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (currentPage < totalPages) {
+                                            setCurrentPage(currentPage + 1);
+                                        }
+                                    }}
+                                />
+                            </PaginationItem>
+
+                        </PaginationContent>
+                    </Pagination>
                 </div>
 
                 {/* FOOTER */}

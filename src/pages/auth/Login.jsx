@@ -3,11 +3,13 @@ import { BiError } from "react-icons/bi";
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Login() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
     const [dataForm, setDataForm] = useState({
         email: "",
         password: "",
@@ -83,9 +85,6 @@ export default function Login() {
                 <div>
                     <div className="flex justify-between items-center mb-1.5">
                         <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider">Password</label>
-                        <span className="text-[#A87C2D] text-xs cursor-pointer hover:underline">
-                            Forgot Password?
-                        </span>
                     </div>
 
                     <input
@@ -95,6 +94,26 @@ export default function Login() {
                         className="w-full mt-1 px-4 py-2.5 bg-[#161616] border border-white/10 rounded-lg focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/20 outline-none transition"
                         placeholder="********"
                     />
+                    <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="remember"
+                                checked={rememberMe}
+                                onCheckedChange={(checked) => setRememberMe(checked)}
+                            />
+
+                            <label
+                                htmlFor="remember"
+                                className="text-sm text-[#D3CDC3]/70 cursor-pointer"
+                            >
+                                Remember Me
+                            </label>
+                        </div>
+
+                        <span className="text-[#A87C2D] text-xs cursor-pointer hover:underline">
+                            Forgot Password?
+                        </span>
+                    </div>
                 </div>
 
                 {/* BUTTON */}

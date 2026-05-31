@@ -6,6 +6,15 @@ import {
     FaEye
 } from "react-icons/fa";
 
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import dataCustomers from "../data/datacustomers.json";
@@ -26,6 +35,9 @@ export default function Customers() {
     const [statusFilter, setStatusFilter] = useState("All");
     const [showForm, setShowForm] = useState(false);
     const [customers, setCustomers] = useState(dataCustomers);
+    // PAGINATION
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 100;
 
     const [form, setForm] = useState({
         Nama_Lengkap: "",
@@ -78,6 +90,15 @@ export default function Customers() {
 
         return matchSearch && matchStatus;
     });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+
+    const currentData = filtered.slice(
+        startIndex,
+        startIndex + itemsPerPage
+    );
 
     return (
         <div className="w-full min-h-screen bg-[#0f0f17] text-gray-100 antialiased selection:bg-[#dfb34c]/30 selection:text-[#dfb34c]">
@@ -189,7 +210,7 @@ export default function Customers() {
                 <div className="bg-[#1b1b24]/20 backdrop-blur-md border border-[#242335]/60 rounded-2xl overflow-hidden mb-8 shadow-xl">
                     <div className="overflow-x-auto">
                         <Table headers={["Customer", "Contact", "Membership", "Level", "Status", "Action"]}>
-                            {filtered.map((c) => {
+                            {currentData.map((c) => {
                                 return (
                                     <tr key={c.ID_Customer} className="group border-b border-[#242335]/40 last:border-none hover:bg-[#1b1b24]/40 transition-colors duration-200">
                                         {/* CUSTOMER */}
@@ -276,6 +297,52 @@ export default function Customers() {
                             <EmptyState title="No Customer Found" />
                         </div>
                     )}
+                </div>
+                <div className="flex justify-center mt-6">
+                    <Pagination>
+                        <PaginationContent>
+
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (currentPage > 1) {
+                                            setCurrentPage(currentPage - 1);
+                                        }
+                                    }}
+                                />
+                            </PaginationItem>
+
+                            {[...Array(totalPages)].map((_, index) => (
+                                <PaginationItem key={index}>
+                                    <PaginationLink
+                                        href="#"
+                                        isActive={currentPage === index + 1}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setCurrentPage(index + 1);
+                                        }}
+                                    >
+                                        {index + 1}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            ))}
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (currentPage < totalPages) {
+                                            setCurrentPage(currentPage + 1);
+                                        }
+                                    }}
+                                />
+                            </PaginationItem>
+
+                        </PaginationContent>
+                    </Pagination>
                 </div>
 
                 <Footer />
