@@ -4,6 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRef, useEffect } from "react";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -14,6 +15,11 @@ export default function Login() {
         email: "",
         password: "",
     });
+    const emailRef = useRef(null);
+
+    useEffect(() => {
+        emailRef.current?.focus();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -73,7 +79,7 @@ export default function Login() {
                         Email Address
                     </label>
                     <input
-                        name="email"
+                        ref={emailRef}
                         type="email"
                         onChange={handleChange}
                         className="w-full mt-1 px-4 py-2.5 bg-[#161616] border border-white/10 rounded-lg focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/20 outline-none transition"

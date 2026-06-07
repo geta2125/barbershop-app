@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 
 export default function Register() {
+    const nameRef = useRef(null);
+
+    useEffect(() => {
+        nameRef.current?.focus();
+    }, []);
     return (
         <div>
             {/* HEADER */}
@@ -14,6 +20,19 @@ export default function Register() {
             </div>
 
             <form className="space-y-4">
+                <div>
+                    <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider block mb-1.5">
+                        Full Name
+                    </label>
+
+                    <input
+                        ref={nameRef}
+                        type="text"
+                        required
+                        className="w-full px-4 py-3 bg-[#161616] border border-white/10 rounded-xl text-[#D3CDC3] placeholder-[#D3CDC3]/30 focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/10 outline-none transition"
+                        placeholder="Geta Dewi Artika Sari"
+                    />
+                </div>
                 {/* EMAIL */}
                 <div>
                     <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider block mb-1.5">

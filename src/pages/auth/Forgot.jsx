@@ -2,6 +2,11 @@ import { Link } from "react-router-dom";
 import { HiArrowLeft } from "react-icons/hi2";
 
 export default function Forgot() {
+    const emailRef = useRef(null);
+
+    useEffect(() => {
+        emailRef.current?.focus();
+    }, []);
     return (
         <div>
             {/* HEADER */}

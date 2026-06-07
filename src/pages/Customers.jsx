@@ -15,7 +15,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import dataCustomers from "../data/datacustomers.json";
 
@@ -35,6 +35,10 @@ export default function Customers() {
     const [statusFilter, setStatusFilter] = useState("All");
     const [showForm, setShowForm] = useState(false);
     const [customers, setCustomers] = useState(dataCustomers);
+    const searchRef = useRef(null);
+    useEffect(() => {
+        searchRef.current?.focus();
+    }, []);
     // PAGINATION
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 100;
@@ -131,8 +135,13 @@ export default function Customers() {
                 {/* ACTION BAR (SEARCH & FILTER) */}
                 <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6 bg-[#1b1b24]/20 p-4 rounded-2xl border border-[#242335]/40">
                     <div className="flex-1 max-w-md">
-                        <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search customer..." />
-                    </div>
+                        <SearchBar
+                            ref={searchRef}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search customer..."
+                        />                    
+                </div>
                     <div className="flex gap-3 flex-wrap sm:flex-nowrap">
                         <select
                             value={statusFilter}
