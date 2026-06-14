@@ -1,163 +1,214 @@
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { BiError } from "react-icons/bi";
 import { FcGoogle } from "react-icons/fc";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useRef, useEffect } from "react";
+import { HiOutlineCheckCircle } from "react-icons/hi2";
+import { usersAPI } from "../../services/usersAPI";
 
 export default function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const emailRef = useRef(null);
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [successMsg, setSuccessMsg] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
     const [dataForm, setDataForm] = useState({
         email: "",
         password: "",
     });
-    const emailRef = useRef(null);
 
+    // Efek membaca data kiriman setelah sukses daftar akun
     useEffect(() => {
+        if (location.state?.successMessage) {
+            setSuccessMsg(location.state.successMessage);
+        }
+        if (location.state?.registeredEmail) {
+            setDataForm((prev) => ({
+                ...prev,
+                email: location.state.registeredEmail
+            }));
+        }
         emailRef.current?.focus();
-    }, []);
+    }, [location.state]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setDataForm({ ...dataForm, [name]: value });
+        setDataForm({
+            ...dataForm,
+            [e.target.name]: e.target.value
+        });
     };
 
-    const handleSubmit = (e) => {
+    // ==========================================
+    // PROSES SUBMIT LOGIN (YANG SUDAH DIPERBAIKI)
+    // ==========================================
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setError("");
+        try {
+            setLoading(true);
+            setError("");
+            setSuccessMsg("");
 
-        setTimeout(() => {
-            // Logika login tiruan Anda
-            if (dataForm.email === "geta@gmail.com" && dataForm.password === "2125") {
-                localStorage.setItem("user", JSON.stringify(dataForm));
-                navigate("/");
-            } else {
-                setError("Email atau password yang Anda masukkan salah.");
-            }
+            const user = await usersAPI.login(
+                dataForm.email.trim(),
+                dataForm.password.trim()
+            );
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(user)
+            );
+
+            localStorage.setItem(
+                "auth_token",
+                "logged_in"
+            );
+
+            console.log("LOGIN SUCCESS =", user);
+
+            navigate("/dashboard");
+        }
+        catch (err) {
+            console.log(err);
+            setError(err.response?.data?.message || "Login gagal, silakan coba lagi.");
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     return (
-        <div>
-
+        <div className="w-full max-w-sm mx-auto">
             {/* HEADER */}
-            <h2 className="text-3xl font-bold text-white mb-1.5">
-                Welcome Back
+            <h2 className="text-3xl font-bold text-white mb-1.5 tracking-tight">
+                Selamat Datang
             </h2>
-
-            <p className="text-sm text-[#D3CDC3]/60 mb-8">
-                Today is a new day. Sign in to start managing your projects.
+            <p className="text-sm text-[#D3CDC3]/60 mb-6">
+                Masuk ke akun GroomGold untuk mulai mengelola sistem.
             </p>
+
+            {/* NOTIFIKASI SUKSES REGISTER */}
+            {successMsg && (
+                <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4 p-3 rounded-xl flex items-center text-xs font-medium animate-in fade-in duration-200">
+                    <HiOutlineCheckCircle className="mr-2 text-base flex-shrink-0" />
+                    {successMsg}
+                </div>
+            )}
 
             {/* ERROR */}
             {error && (
-                <div className="bg-[#A87C2D]/20 border border-[#A87C2D] mb-4 p-3 rounded-lg flex items-center text-sm">
-                    <BiError className="mr-2" />
+                <div className="bg-red-500/10 border border-red-500/30 text-red-400 mb-4 p-3 rounded-xl flex items-center text-xs font-medium animate-in fade-in duration-200">
+                    <BiError className="mr-2 text-base flex-shrink-0" />
                     {error}
                 </div>
             )}
 
-            {/* LOADING */}
-            {loading && (
-                <div className="bg-[#222] border border-[#A87C2D] mb-4 p-3 rounded-lg flex items-center text-sm">
-                    <AiOutlineLoading3Quarters className="mr-2 animate-spin" />
-                    Loading...
-                </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-5">
-
                 {/* EMAIL */}
                 <div>
                     <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider block mb-1.5">
-                        Email Address
+                        Alamat Email
                     </label>
                     <input
                         ref={emailRef}
+                        name="email"
                         type="email"
+                        required
+                        disabled={loading}
+                        value={dataForm.email}
                         onChange={handleChange}
-                        className="w-full mt-1 px-4 py-2.5 bg-[#161616] border border-white/10 rounded-lg focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/20 outline-none transition"
-                        placeholder="example@email.com"
+                        placeholder="Masukkan email"
+                        className="w-full px-4 py-3 bg-[#161616] border border-white/10 rounded-xl text-[#D3CDC3] placeholder-[#D3CDC3]/30 focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/10 outline-none transition disabled:opacity-50"
                     />
                 </div>
 
                 {/* PASSWORD */}
                 <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                        <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider">Password</label>
+                    <label className="text-xs font-semibold text-[#D3CDC3]/70 uppercase tracking-wider block mb-1.5">
+                        Kata Sandi
+                    </label>
+                    <div className="relative">
+                        <input
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            required
+                            disabled={loading}
+                            value={dataForm.password}
+                            onChange={handleChange}
+                            placeholder="••••••••"
+                            className="w-full pl-4 pr-12 py-3 bg-[#161616] border border-white/10 rounded-xl text-[#D3CDC3] placeholder-[#D3CDC3]/30 focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/10 outline-none transition disabled:opacity-50"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D3CDC3]/40 hover:text-[#A87C2D]"
+                        >
+                            {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                        </button>
                     </div>
 
-                    <input
-                        name="password"
-                        type="password"
-                        onChange={handleChange}
-                        className="w-full mt-1 px-4 py-2.5 bg-[#161616] border border-white/10 rounded-lg focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/20 outline-none transition"
-                        placeholder="********"
-                    />
+                    {/* REMEMBER & FORGOT */}
                     <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center gap-2">
                             <Checkbox
                                 id="remember"
                                 checked={rememberMe}
-                                onCheckedChange={(checked) => setRememberMe(checked)}
+                                onCheckedChange={setRememberMe}
                             />
-
-                            <label
-                                htmlFor="remember"
-                                className="text-sm text-[#D3CDC3]/70 cursor-pointer"
-                            >
-                                Remember Me
+                            <label htmlFor="remember" className="text-xs text-[#D3CDC3]/70 cursor-pointer select-none">
+                                Ingat Saya
                             </label>
                         </div>
-
-                        <span className="text-[#A87C2D] text-xs cursor-pointer hover:underline">
-                            Forgot Password?
-                        </span>
+                        <Link to="/forgot" className="text-[#A87C2D] text-xs hover:underline cursor-pointer font-medium">
+                            Lupa Kata Sandi?
+                        </Link>
                     </div>
                 </div>
 
-                {/* BUTTON */}
+                {/* BUTTON LOGIN */}
                 <button
                     type="submit"
-                    className="w-full bg-[#A87C2D] hover:bg-[#c2923c] text-black font-semibold py-2.5 rounded-lg transition transform active:scale-[0.99]"
+                    disabled={loading}
+                    className="w-full bg-[#A87C2D] hover:bg-[#c2923c] disabled:bg-[#A87C2D]/50 text-black font-bold py-3 rounded-xl transition transform active:scale-[0.99] flex items-center justify-center shadow-lg shadow-[#A87C2D]/10 disabled:pointer-events-none"
                 >
                     {loading ? (
-                        <span className="flex items-center justify-center gap-2">
-                            <AiOutlineLoading3Quarters className="animate-spin text-white" /> Loading...
+                        <span className="flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                            <AiOutlineLoading3Quarters className="animate-spin text-black text-sm" />
+                            Sedang Masuk...
                         </span>
-                    ) : "Sign in"}
+                    ) : (
+                        <span className="text-xs uppercase tracking-wider">Masuk</span>
+                    )}
                 </button>
 
                 {/* DIVIDER */}
-                <div className="flex items-center gap-3 text-xs text-[#D3CDC3]/40">
-                    <div className="flex-1 h-[1px] bg-white/10"></div>
-                    OR
-                    <div className="flex-1 h-[1px] bg-white/10"></div>
+                <div className="flex items-center gap-3 text-[10px] font-bold tracking-widest text-[#D3CDC3]/30">
+                    <div className="flex-1 h-[1px] bg-white/5"></div>
+                    ATAU
+                    <div className="flex-1 h-[1px] bg-white/5"></div>
                 </div>
 
                 {/* GOOGLE */}
                 <button
                     type="button"
-                    className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-2.5 rounded-lg hover:bg-white/10 transition"
+                    className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-xl hover:bg-white/10 text-white text-xs font-semibold uppercase tracking-wider transition"
                 >
-                    <FcGoogle />
-                    Sign in with Google
+                    <FcGoogle size={16} />
+                    Masuk dengan Google
                 </button>
 
-                {/* REGISTER */}
-                <p className="text-center text-xs text-[#D3CDC3]/50">
-                    Don’t have an account?{" "}
-                    <span className="text-[#A87C2D] cursor-pointer hover:underline">
-                        Sign up
-                    </span>
+                {/* REGISTER LINK */}
+                <p className="text-center text-xs text-[#D3CDC3]/40 pt-1">
+                    Belum memiliki akun?
+                    <Link to="/register" className="text-[#A87C2D] font-semibold hover:underline ml-1">
+                        Daftar Sekarang
+                    </Link>
                 </p>
-
             </form>
         </div>
     );

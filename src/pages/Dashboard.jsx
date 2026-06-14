@@ -491,8 +491,6 @@ export default function Dashboard() {
 
                 </div>
 
-                {/* FOOTER */}
-                <Footer />
 
             </Container>
 

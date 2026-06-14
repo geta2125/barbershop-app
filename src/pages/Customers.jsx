@@ -1,68 +1,80 @@
 import {
-    FaCalendarAlt,
-    FaPlus,
-    FaTimes,
-    FaUserCircle,
-    FaEye
+    FaSearch, FaPlus, FaCalendarAlt, FaUserCircle,
+    FaEye, FaTimes, FaCut
 } from "react-icons/fa";
-
 import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
+    Pagination, PaginationContent, PaginationItem,
+    PaginationLink, PaginationNext, PaginationPrevious,
 } from "@/components/ui/pagination";
-
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+
 import dataCustomers from "../data/datacustomers.json";
 
-import Container from "../components/Container";
+import Container  from "../components/Container";
 import PageHeader from "../components/PageHeader";
 import InputField from "../components/InputField";
-import SearchBar from "../components/SearchBar";
-import Modal from "../components/Modal";
-import Footer from "../components/Footer";
-import Avatar from "../components/Avatar";
+import Modal      from "../components/Modal";
+import Avatar     from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
-import StatsCard from "../components/StatsCard";
-import Table from "../components/Table";
+import Table      from "../components/Table";
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function getInitials(name = "") {
+    return name.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("");
+}
+
+const avatarGradients = [
+    "from-violet-600 to-purple-900",
+    "from-sky-600 to-blue-900",
+    "from-emerald-600 to-teal-900",
+    "from-rose-600 to-pink-900",
+    "from-amber-500 to-orange-800",
+];
+function pickGradient(name = "") {
+    return avatarGradients[(name.charCodeAt(0) || 0) % avatarGradients.length];
+}
+
+// ── Field wrapper (konsisten dengan Booking.jsx) ──────────────────────────
+const inputCls   = "w-full bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#A87C2D]/60 focus:ring-1 focus:ring-[#A87C2D]/30 transition-all duration-200";
+const selectCls  = "w-full bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#A87C2D]/60 focus:ring-1 focus:ring-[#A87C2D]/30 transition-all duration-200 appearance-none cursor-pointer";
+
+function Field({ label, children }) {
+    return (
+        <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] tracking-[0.2em] uppercase text-[#A87C2D]/70 font-semibold">{label}</label>
+            {children}
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Customers() {
-    const [search, setSearch] = useState("");
+    const [search,       setSearch]       = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
-    const [showForm, setShowForm] = useState(false);
-    const [customers, setCustomers] = useState(dataCustomers);
+    const [customers,    setCustomers]    = useState(dataCustomers);
+    const [showForm,     setShowForm]     = useState(false);
+    const [currentPage,  setCurrentPage]  = useState(1);
+    const itemsPerPage = 50; // Disamakan dengan booking agar serasi posisinya
+
     const searchRef = useRef(null);
     useEffect(() => {
         searchRef.current?.focus();
     }, []);
-    // PAGINATION
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 100;
 
     const [form, setForm] = useState({
-        Nama_Lengkap: "",
-        Email: "",
-        No_HP: "",
-        Status_Member: "Member",
-        Level_Membership: "Silver",
-        Status_Aktif: "Aktif"
+        Nama_Lengkap: "", Email: "", No_HP: "",
+        Status_Member: "Member", Level_Membership: "Silver", Status_Aktif: "Aktif"
     });
 
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        });
-    };
+    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleSubmit = (e) => {
         e.preventDefault();
         const newCustomer = {
-            ID_Customer: customers.length + 1,
+            ID_Customer: Date.now(), // Menggunakan ID yang unik konsisten seperti booking
             ...form,
             No_HP: Number(form.No_HP) || 0,
             Total_Transaksi: 0,
@@ -71,290 +83,292 @@ export default function Customers() {
             Tanggal_Daftar: new Date().toISOString().split('T')[0] + " 00:00:00"
         };
 
-        setCustomers([newCustomer, ...customers]);
-        setForm({
-            Nama_Lengkap: "",
-            Email: "",
-            No_HP: "",
-            Status_Member: "Member",
-            Level_Membership: "Silver",
-            Status_Aktif: "Aktif"
-        });
+        setCustomers(prev => [newCustomer, ...prev]);
+        setForm({ Nama_Lengkap: "", Email: "", No_HP: "", Status_Member: "Member", Level_Membership: "Silver", Status_Aktif: "Aktif" });
         setShowForm(false);
     };
 
-    const filtered = customers.filter((s) => {
-        const matchSearch = (s.Nama_Lengkap || "")
-            .toLowerCase()
-            .includes(search.toLowerCase());
-
-        const matchStatus =
-            statusFilter === "All" ||
-            s.Status_Aktif === statusFilter;
-
-        return matchSearch && matchStatus;
-    });
-
-    const totalPages = Math.ceil(filtered.length / itemsPerPage);
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-
-    const currentData = filtered.slice(
-        startIndex,
-        startIndex + itemsPerPage
+    const filtered = customers.filter(c =>
+        (c.Nama_Lengkap || "").toLowerCase().includes(search.toLowerCase()) &&
+        (statusFilter === "All" || c.Status_Aktif === statusFilter)
     );
 
+    const totalPages  = Math.ceil(filtered.length / itemsPerPage);
+    const currentData = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    const stats = [
+        { label: "Total Customers", value: customers.length,                                                 accent: "text-white" },
+        { label: "Active",          value: customers.filter(c => c.Status_Aktif === "Aktif").length,         accent: "text-emerald-400" },
+        { label: "Inactive",        value: customers.filter(c => c.Status_Aktif === "Tidak Aktif").length,   accent: "text-red-400" },
+        { label: "Members",         value: customers.filter(c => c.Status_Member === "Member").length,       accent: "text-amber-400" },
+    ];
+
     return (
-        <div className="w-full min-h-screen bg-[#0f0f17] text-gray-100 antialiased selection:bg-[#dfb34c]/30 selection:text-[#dfb34c]">
-            <Container py="py-8">
-                {/* HEADER SECTION */}
-                <PageHeader title="Customers" breadcrumb={["Home", "Customers", "Management"]}>
-                    <div className="flex items-center gap-2.5 bg-[#1b1b24] px-4 py-2.5 rounded-xl border border-[#242335] text-xs text-gray-400 font-medium tracking-wide">
-                        <span>Barber Customers</span>
-                        <FaCalendarAlt className="text-[#dfb34c] text-sm" />
+        <div className="w-full min-h-screen bg-[#080807] text-[#D3CDC3] font-sans antialiased">
+            <Container>
+
+                {/* ── HEADER ── */}
+                <PageHeader title="Customers" breadcrumb={["Dashboard", "Customers"]}>
+                    <div className="flex items-center gap-2 bg-[#0D0C0B] border border-white/6 px-4 py-2 rounded-xl text-xs text-white/40">
+                        <FaCalendarAlt className="text-[#A87C2D]" />
+                        <span>Customer Database</span>
                     </div>
                 </PageHeader>
 
-                {/* PROFILE/USER BANNER */}
-                <div className="flex items-center gap-4 mb-8 bg-[#1b1b24]/30 border border-[#242335]/50 p-4 rounded-2xl backdrop-blur-sm max-w-xs">
+                {/* ── PROFILE STRIP ── */}
+                <div className="flex items-center gap-3 mb-8 p-4 bg-[#0D0C0B] border border-white/5 rounded-2xl">
                     <Avatar name="Geta" />
-                    <div>
-                        <h3 className="font-bold text-lg">Geta Dewi</h3>
-                        <p className="text-gray-400">Customer Management</p>
+                    <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-white text-sm">Geta Dewi</p>
+                        <p className="text-xs text-white/30">Customer Management</p>
                     </div>
+                    <span className="hidden sm:flex items-center gap-1.5 text-[10px] text-[#A87C2D]/70 bg-[#A87C2D]/8 border border-[#A87C2D]/15 rounded-full px-3 py-1 font-semibold uppercase tracking-widest">
+                        <FaCut className="text-[9px]" /> GroomGold
+                    </span>
                 </div>
 
-                {/* STATS CARDS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-                    <StatsCard title="Total Customers" value={customers.length} />
-                    <StatsCard title="Active Customers" value={customers.filter((s) => s.Status_Aktif === "Aktif").length} />
-                    <StatsCard title="Inactive Customers" value={customers.filter((s) => s.Status_Aktif === "Tidak Aktif").length} />
-                    <StatsCard title="Members" value={customers.filter((s) => s.Status_Member === "Member").length} />
+                {/* ── STATS ── */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+                    {stats.map(s => (
+                        <div key={s.label} className="bg-[#0D0C0B] border border-white/5 rounded-2xl px-5 py-4 hover:border-white/10 transition-colors duration-200">
+                            <p className="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-1">{s.label}</p>
+                            <p className={`text-3xl font-black ${s.accent}`}>{s.value}</p>
+                        </div>
+                    ))}
                 </div>
 
-                {/* ACTION BAR (SEARCH & FILTER) */}
-                <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6 bg-[#1b1b24]/20 p-4 rounded-2xl border border-[#242335]/40">
-                    <div className="flex-1 max-w-md">
-                        <SearchBar
-                            ref={searchRef}
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search customer..."
-                        />                    
-                </div>
-                    <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+                {/* ── ACTION BAR ── */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="flex items-center justify-center gap-2 bg-[#A87C2D] hover:bg-[#c49535] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors duration-200"
+                    >
+                        <FaPlus className="text-xs" />
+                        Tambah Customer
+                    </button>
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        {/* Search */}
+                        <div className="relative">
+                            <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20 text-xs" />
+                            <input
+                                ref={searchRef}
+                                value={search}
+                                onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                                placeholder="Cari customer..."
+                                className="pl-9 pr-4 py-2.5 bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] placeholder-white/20 rounded-xl text-sm focus:outline-none focus:border-[#A87C2D]/50 transition-all duration-200 w-full sm:w-52"
+                            />
+                        </div>
+
+                        {/* Filter */}
                         <select
                             value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="px-4 py-3 bg-[#1b1b24] border border-[#242335] rounded-xl outline-none text-sm font-medium text-gray-300 hover:border-[#dfb34c]/50 transition-colors focus:border-[#dfb34c] cursor-pointer"
+                            onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                            className="bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#A87C2D]/50 transition-all duration-200 appearance-none cursor-pointer"
                         >
-                            <option value="All">All Status</option>
+                            <option value="All">Semua Status</option>
                             <option value="Aktif">Aktif</option>
                             <option value="Tidak Aktif">Tidak Aktif</option>
                         </select>
-
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="flex items-center justify-center gap-2 bg-[#dfb34c] text-[#111116] font-bold px-5 py-3 rounded-xl hover:bg-[#c9a140] active:scale-[0.98] transition-all duration-200 text-sm shadow-lg shadow-[#dfb34c]/10"
-                        >
-                            <FaPlus className="text-xs" /> Add Customer
-                        </button>
                     </div>
                 </div>
 
-                {/* MODAL FORM */}
+                {/* ── MODAL ADD CUSTOMER ── */}
                 <Modal show={showForm}>
-                    <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#242335]/60">
+                    <div className="flex items-start justify-between mb-6">
                         <div>
-                            <h2 className="text-2xl font-extrabold text-white tracking-wide">Add Customer</h2>
-                            <p className="text-xs text-gray-400 mt-1">Tambahkan customer baru GroomGold</p>
+                            <h2 className="text-lg font-bold text-white tracking-wide">Tambah Customer</h2>
+                            <p className="text-xs text-white/30 mt-0.5">Tambahkan customer baru GroomGold</p>
                         </div>
                         <button
                             onClick={() => setShowForm(false)}
-                            className="w-10 h-10 rounded-xl bg-[#14141d] border border-[#242335] flex items-center justify-center text-gray-400 hover:text-white hover:border-gray-500 transition-colors duration-200"
+                            className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all duration-200"
                         >
-                            <FaTimes />
+                            <FaTimes className="text-xs" />
                         </button>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <InputField label="Full Name" name="Nama_Lengkap" value={form.Nama_Lengkap} onChange={handleChange} />
-                            <InputField label="Email" name="Email" value={form.Email} onChange={handleChange} />
-                            <InputField label="Phone Number" name="No_HP" value={form.No_HP} onChange={handleChange} />
+                    {/* Gold accent line */}
+                    <div className="w-full h-[1px] bg-gradient-to-r from-[#A87C2D]/60 via-[#A87C2D]/20 to-transparent mb-6" />
 
-                            <div>
-                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Status</label>
-                                <select
-                                    name="Status_Aktif"
-                                    value={form.Status_Aktif}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3.5 bg-[#14141d] border border-[#242335] rounded-xl outline-none text-white text-sm focus:border-[#dfb34c] transition-colors"
-                                >
-                                    <option value="Aktif">Aktif</option>
-                                    <option value="Tidak Aktif">Tidak Aktif</option>
-                                </select>
-                            </div>
-                        </div>
+                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Field label="Full Name">
+                            <input type="text" name="Nama_Lengkap" placeholder="Contoh: Budi Santoso" value={form.Nama_Lengkap} onChange={handleChange} required className={inputCls} />
+                        </Field>
 
-                        <div className="flex gap-4 pt-4 border-t border-[#242335]/40 mt-6">
-                            <button
-                                type="button"
-                                onClick={() => setShowForm(false)}
-                                className="flex-1 py-3.5 rounded-xl bg-[#14141d] border border-[#242335] font-semibold text-gray-300 hover:bg-[#1b1b24] transition-colors"
-                            >
-                                Cancel
+                        <Field label="Email Address">
+                            <input type="email" name="Email" placeholder="budi@example.com" value={form.Email} onChange={handleChange} required className={inputCls} />
+                        </Field>
+
+                        <Field label="Phone Number">
+                            <input type="text" name="No_HP" placeholder="6281234..." value={form.No_HP} onChange={handleChange} required className={inputCls} />
+                        </Field>
+
+                        <Field label="Status Aktif">
+                            <select name="Status_Aktif" value={form.Status_Aktif} onChange={handleChange} className={selectCls}>
+                                <option value="Aktif">Aktif</option>
+                                <option value="Tidak Aktif">Tidak Aktif</option>
+                            </select>
+                        </Field>
+
+                        <Field label="Status Member">
+                            <select name="Status_Member" value={form.Status_Member} onChange={handleChange} className={selectCls}>
+                                <option value="Member">Member</option>
+                                <option value="Non Member">Non Member</option>
+                            </select>
+                        </Field>
+
+                        <Field label="Level Membership">
+                            <select name="Level_Membership" value={form.Level_Membership} onChange={handleChange} className={selectCls}>
+                                <option value="Silver">Silver</option>
+                                <option value="Gold">Gold</option>
+                                <option value="Platinum">Platinum</option>
+                            </select>
+                        </Field>
+
+                        <div className="md:col-span-2 flex gap-3 pt-2 border-t border-white/5 mt-2">
+                            <button type="button" onClick={() => setShowForm(false)}
+                                className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/8 text-white/50 hover:text-white hover:bg-white/8 text-sm font-medium transition-all duration-200">
+                                Batal
                             </button>
-                            <button
-                                type="submit"
-                                className="flex-1 py-3.5 rounded-xl bg-[#dfb34c] text-[#111116] font-bold hover:bg-[#c9a140] transition-colors shadow-lg shadow-[#dfb34c]/5"
-                            >
-                                Save Customer
+                            <button type="submit"
+                                className="flex-1 py-2.5 rounded-xl bg-[#A87C2D] hover:bg-[#c49535] text-white text-sm font-semibold transition-colors duration-200">
+                                Simpan Customer
                             </button>
                         </div>
                     </form>
                 </Modal>
 
-                {/* DATA TABLE VIEW */}
-                <div className="bg-[#1b1b24]/20 backdrop-blur-md border border-[#242335]/60 rounded-2xl overflow-hidden mb-8 shadow-xl">
-                    <div className="overflow-x-auto">
-                        <Table headers={["Customer", "Contact", "Membership", "Level", "Status", "Action"]}>
-                            {currentData.map((c) => {
-                                return (
-                                    <tr key={c.ID_Customer} className="group border-b border-[#242335]/40 last:border-none hover:bg-[#1b1b24]/40 transition-colors duration-200">
-                                        {/* CUSTOMER */}
-                                        <td className="px-6 py-4.5 align-middle">
-                                            <div className="flex items-center gap-3.5">
-                                                <div className="w-10 h-10 rounded-xl bg-[#242335] border border-[#32314a] flex items-center justify-center text-[#dfb34c] text-lg transition-all duration-300 group-hover:bg-[#dfb34c] group-hover:text-[#111116] group-hover:shadow-[0_0_12px_rgba(223,179,76,0.2)]">
-                                                    <FaUserCircle />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <h3 className="font-semibold text-gray-200 group-hover:text-white transition-colors duration-150 text-sm">{c.Nama_Lengkap}</h3>
-                                                    <div className="mt-1">
-                                                        <span className="inline-block text-[10px] font-mono bg-[#242335] text-[#dfb34c] px-1.5 py-0.5 rounded-md border border-[#32314a]/60">
-                                                            #{c.ID_Customer}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
+                {/* ── TABLE ── */}
+                <div className="bg-[#0D0C0B] border border-white/6 rounded-2xl overflow-hidden mb-6">
 
-                                        {/* CONTACT */}
-                                        <td className="px-6 py-4.5 align-middle">
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-xs font-medium text-gray-300">{c.Email}</span>
-                                                <span className="text-[11px] text-gray-400 tracking-wide">+{c.No_HP}</span>
-                                            </div>
-                                        </td>
-
-                                        {/* MEMBERSHIP (REDESIGNED TOTAL) */}
-                                        <td className="px-6 py-4.5 align-middle">
-                                            <div className="flex items-center justify-start">
-                                                {c.Status_Member === "Member" ? (
-                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[#dfb34c]/10 text-[#dfb34c] border border-[#dfb34c]/20 tracking-wide">
-                                                        Member
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-500/10 text-gray-400 border border-gray-500/20 tracking-wide">
-                                                        Non Member
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-
-                                        {/* LEVEL */}
-                                        <td className="px-6 py-4.5 align-middle">
-                                            <span className="inline-block font-bold text-[#dfb34c] bg-[#dfb34c]/5 px-2.5 py-1 rounded-lg border border-[#dfb34c]/15 text-[11px] tracking-wider uppercase">
-                                                {c.Level_Membership || "-"}
-                                            </span>
-                                        </td>
-
-                                        {/* STATUS */}
-                                        <td className="px-6 py-4.5 align-middle">
-                                            <div className="flex items-center justify-start">
-                                                {c.Status_Aktif === "Aktif" ? (
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                                                        Aktif
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0"></span>
-                                                        Tidak Aktif
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-
-                                        {/* ACTION */}
-                                        <td className="px-6 py-4.5 text-right align-middle">
-                                            <Link
-                                                to={`/customers/${c.ID_Customer}`}
-                                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#242335]/40 border border-[#32314a] text-gray-300 hover:border-[#dfb34c] hover:bg-[#dfb34c] hover:text-[#111116] transition-all duration-200 font-bold text-xs"
-                                            >
-                                                <FaEye className="text-xs" /> Detail
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </Table>
+                    {/* Table header */}
+                    <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <FaUserCircle className="text-[#A87C2D] text-xs" />
+                            <span className="text-xs font-semibold text-white/60 uppercase tracking-widest">Daftar Customer</span>
+                        </div>
+                        {filtered.length > 0 && (
+                            <span className="text-[10px] text-white/25">
+                                {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filtered.length)} dari {filtered.length}
+                            </span>
+                        )}
                     </div>
 
-                    {filtered.length === 0 && (
-                        <div className="py-16">
-                            <EmptyState title="No Customer Found" />
-                        </div>
-                    )}
+                    <Table headers={["Customer", "Contact", "Membership", "Level", "Status", ""]}>
+                        {currentData.map(c => {
+                            const initials = getInitials(c.Nama_Lengkap);
+                            const gradient = pickGradient(c.Nama_Lengkap);
+
+                            return (
+                                <tr key={c.ID_Customer} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors duration-150 group">
+
+                                    {/* Customer */}
+                                    <td className="px-5 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
+                                                {initials || "?"}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-white text-sm font-semibold truncate">{c.Nama_Lengkap}</p>
+                                                <p className="text-white/25 text-[10px] font-mono">#{String(c.ID_Customer).slice(-5)}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    {/* Contact */}
+                                    <td className="px-5 py-4">
+                                        <div className="flex flex-col gap-0.5">
+                                            <span className="text-xs text-white/70 font-medium">{c.Email}</span>
+                                            <span className="text-[10px] text-white/40">+{c.No_HP}</span>
+                                        </div>
+                                    </td>
+
+                                    {/* Membership */}
+                                    <td className="px-5 py-4">
+                                        {c.Status_Member === "Member" ? (
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold bg-[#A87C2D]/10 text-[#A87C2D] border border-[#A87C2D]/20">
+                                                Member
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold bg-white/5 text-white/40 border border-white/10">
+                                                Non Member
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    {/* Level */}
+                                    <td className="px-5 py-4">
+                                        <span className="inline-block font-bold text-[#A87C2D] bg-[#A87C2D]/5 px-2 py-0.5 rounded border border-[#A87C2D]/15 text-[10px] tracking-wider uppercase">
+                                            {c.Level_Membership || "-"}
+                                        </span>
+                                    </td>
+
+                                    {/* Status */}
+                                    <td className="px-5 py-4">
+                                        {c.Status_Aktif === "Aktif" ? (
+                                            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border bg-emerald-500/10 border-emerald-500/20 text-emerald-400">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                                Aktif
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border bg-red-500/10 border-red-500/20 text-red-400">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                                                Tidak Aktif
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    {/* Action */}
+                                    <td className="px-5 py-4 text-right">
+                                        <Link
+                                            to={`/customers/${c.ID_Customer}`}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/8 text-white/40 hover:text-[#A87C2D] hover:border-[#A87C2D]/30 hover:bg-[#A87C2D]/5 text-xs font-medium transition-all duration-200"
+                                        >
+                                            <FaEye className="text-[10px]" />
+                                            Detail
+                                        </Link>
+                                    </td>
+
+                                </tr>
+                            );
+                        })}
+                    </Table>
+
+                    {filtered.length === 0 && <EmptyState title="Tidak ada customer ditemukan." />}
                 </div>
-                <div className="flex justify-center mt-6">
-                    <Pagination>
-                        <PaginationContent>
 
-                            <PaginationItem>
-                                <PaginationPrevious
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        if (currentPage > 1) {
-                                            setCurrentPage(currentPage - 1);
-                                        }
-                                    }}
-                                />
-                            </PaginationItem>
-
-                            {[...Array(totalPages)].map((_, index) => (
-                                <PaginationItem key={index}>
-                                    <PaginationLink
-                                        href="#"
-                                        isActive={currentPage === index + 1}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setCurrentPage(index + 1);
-                                        }}
-                                    >
-                                        {index + 1}
-                                    </PaginationLink>
+                {/* ── PAGINATION ── */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center pb-8">
+                        <Pagination>
+                            <PaginationContent className="gap-1">
+                                <PaginationItem>
+                                    <PaginationPrevious href="#" onClick={e => { e.preventDefault(); if (currentPage > 1) setCurrentPage(p => p - 1); }}
+                                        className="bg-[#0D0C0B] border border-white/8 text-white/40 hover:text-white hover:border-white/20 rounded-xl text-xs" />
                                 </PaginationItem>
-                            ))}
 
-                            <PaginationItem>
-                                <PaginationNext
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        if (currentPage < totalPages) {
-                                            setCurrentPage(currentPage + 1);
-                                        }
-                                    }}
-                                />
-                            </PaginationItem>
+                                {[...Array(totalPages)].map((_, i) => (
+                                    <PaginationItem key={i}>
+                                        <PaginationLink href="#"
+                                            isActive={currentPage === i + 1}
+                                            onClick={e => { e.preventDefault(); setCurrentPage(i + 1); }}
+                                            className={`rounded-xl text-xs w-8 h-8 ${currentPage === i + 1 ? "bg-[#A87C2D] border-[#A87C2D] text-white font-bold" : "bg-[#0D0C0B] border-white/8 text-white/40 hover:text-white hover:border-white/20"}`}
+                                        >
+                                            {i + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ))}
 
-                        </PaginationContent>
-                    </Pagination>
-                </div>
+                                <PaginationItem>
+                                    <PaginationNext href="#" onClick={e => { e.preventDefault(); if (currentPage < totalPages) setCurrentPage(p => p + 1); }}
+                                        className="bg-[#0D0C0B] border border-white/8 text-white/40 hover:text-white hover:border-white/20 rounded-xl text-xs" />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </div>
+                )}
 
-                <Footer />
             </Container>
         </div>
     );
