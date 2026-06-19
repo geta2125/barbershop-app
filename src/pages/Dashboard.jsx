@@ -1,501 +1,290 @@
+import { useState, useEffect } from "react";
 import {
-    FaCut,
-    FaTimesCircle,
-    FaDollarSign,
-    FaUsers,
-    FaCalendarAlt,
-    FaChartLine,
-    FaWallet,
-    FaCoins
-} from "react-icons/fa";
-
-import {
-    PieChart,
-    Pie,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-    AreaChart,
-    Area,
-    Cell,
-    CartesianGrid,
-    BarChart,
-    Bar
+  PieChart, Pie, Cell, AreaChart, Area, BarChart, Bar,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 
-import { useState, useEffect } from "react";
+const goldColor = "#dfb34c";
+const cardBg = "#1a1a26";
+const border = "0.5px solid #2a2a3a";
+const radius = 14;
 
-import Container from "../components/Container";
-import PageHeader from "../components/PageHeader";
-import Card from "../components/Card";
-import MiniCard from "../components/MiniCard";
-import Footer from "../components/Footer";
-import Badge from "../components/Badge";
-import Avatar from "../components/Avatar";
-import StatsCard from "../components/StatsCard";
-import UserCard from "../components/UserCard";
-import ChartCard from "../components/ChartCard";
+const lineData = [
+  { name: "Jan", value: 120 },
+  { name: "Feb", value: 145 },
+  { name: "Mar", value: 180 },
+  { name: "Apr", value: 220 },
+  { name: "Mei", value: 250 },
+  { name: "Jun", value: 280 },
+  { name: "Jul", value: 310 },
+];
+
+const statsData = [
+  { name: "Silver", value: 300, color: "#BE9359" },
+  { name: "Gold", value: 180, color: "#E9C664" },
+  { name: "Platinum", value: 40, color: "#d0d0d0" },
+  { name: "Non Member", value: 280, color: "#979797" },
+];
+
+const barData = [
+  { name: "Cash", value: 320, color: "#BE9359" },
+  { name: "QRIS", value: 480, color: "#E9C664" },
+];
+
+function Avatar({ initials }) {
+  return (
+    <div style={{
+      width: 42, height: 42, borderRadius: "50%",
+      background: "linear-gradient(135deg, #dfb34c, #a07020)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontWeight: 500, fontSize: 14, color: "#fff", flexShrink: 0,
+    }}>
+      {initials}
+    </div>
+  );
+}
+
+function StatCard({ label, value, sub }) {
+  return (
+    <div style={{
+      background: cardBg, border, borderRadius: radius,
+      padding: "18px 20px", position: "relative", overflow: "hidden",
+    }}>
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0,
+        height: 2, background: goldColor, borderRadius: "14px 14px 0 0",
+      }} />
+      <div style={{ fontSize: 11, color: "#666", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 26, fontWeight: 500, color: "#fff" }}>{value}</div>
+      <div style={{ fontSize: 11, color: goldColor, marginTop: 4 }}>{sub}</div>
+    </div>
+  );
+}
+
+function MiniCard({ icon, iconBg, iconColor, label, value, sub }) {
+  return (
+    <div style={{
+      background: cardBg, border, borderRadius: radius,
+      padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 12,
+    }}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 10,
+        background: iconBg, color: iconColor,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 16, flexShrink: 0,
+      }}>
+        {icon}
+      </div>
+      <div>
+        <div style={{ fontSize: 11, color: "#666", marginBottom: 3 }}>{label}</div>
+        <div style={{ fontSize: 18, fontWeight: 500, color: "#fff" }}>{value}</div>
+        <div style={{ fontSize: 11, color: goldColor, marginTop: 2 }}>{sub}</div>
+      </div>
+    </div>
+  );
+}
+
+function ChartCard({ title, icon, children }) {
+  return (
+    <div style={{ background: cardBg, border, borderRadius: radius, padding: 20 }}>
+      <div style={{
+        fontSize: 14, fontWeight: 500, color: "#fff",
+        marginBottom: 16, display: "flex", alignItems: "center", gap: 8,
+      }}>
+        <span style={{ color: goldColor }}>{icon}</span>
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function UserCard({ initials, name, role }) {
+  return (
+    <div style={{
+      background: cardBg, border, borderRadius: radius,
+      padding: "14px 16px", display: "flex", alignItems: "center", gap: 12,
+    }}>
+      <div style={{
+        width: 38, height: 38, borderRadius: "50%",
+        background: "#2a2a3a", display: "flex", alignItems: "center",
+        justifyContent: "center", fontSize: 12, fontWeight: 500, color: goldColor,
+      }}>
+        {initials}
+      </div>
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: "#fff" }}>{name}</div>
+        <div style={{ fontSize: 11, color: "#666" }}>{role}</div>
+      </div>
+      <div style={{
+        marginLeft: "auto", fontSize: 10,
+        background: "rgba(223,179,76,0.1)", color: goldColor,
+        border: "0.5px solid rgba(223,179,76,0.25)",
+        borderRadius: 6, padding: "2px 8px",
+      }}>
+        Staff
+      </div>
+    </div>
+  );
+}
+
+function FinCard({ label, value, fillColor, percent }) {
+  return (
+    <div style={{ background: cardBg, border, borderRadius: radius, padding: "16px 18px" }}>
+      <div style={{ fontSize: 11, color: "#666", marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 16, fontWeight: 500, color: "#fff" }}>{value}</div>
+      <div style={{ height: 4, background: "#2a2a3a", borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
+        <div style={{ height: "100%", borderRadius: 99, background: fillColor, width: `${percent}%` }} />
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
-
-    const [stats, setStats] = useState({
-        customers: 800,
-        members: 520,
-        booking: 1245,
-        revenue: 7500,
-        active: 650,
-        inactive: 150,
-    });
-
-    // LINE CHART
-    const lineData = [
-        { name: "Jan", value: 120 },
-        { name: "Feb", value: 145 },
-        { name: "Mar", value: 180 },
-        { name: "Apr", value: 220 },
-        { name: "Mei", value: 250 },
-        { name: "Jun", value: 280 },
-        { name: "Jul", value: 310 },
-    ];
-
-    // PIE CHART
-    const statsData = [
-        {
-            name: "Silver",
-            value: 300,
-            color: "#BE9359"
-        },
-        {
-            name: "Gold",
-            value: 180,
-            color: "#E9C664"
-        },
-        {
-            name: "Platinum",
-            value: 40,
-            color: "#FFFFFF"
-        },
-        {
-            name: "Non Member",
-            value: 280,
-            color: "#979797"
-        },
-    ];
-
-    // BAR CHART
-    const barData = [
-        {
-            name: "Cash",
-            value: 320,
-            color: "#BE9359"
-        },
-        {
-            name: "QRIS",
-            value: 480,
-            color: "#E9C664"
-        }
-    ];
-
-    useEffect(() => {
-
-        const interval = setInterval(() => {
-
-            setStats((prev) => ({
-                ...prev,
-                booking: prev.booking + 1,
-            }));
-
-        }, 8000);
-
-        return () => clearInterval(interval);
-
-    }, []);
-
-    return (
-
-        <div className="
-            w-full
-            min-h-screen
-            bg-[#0f0f17]
-            text-white
-            overflow-x-hidden
-        ">
-
-            <Container>
-
-                {/* HEADER */}
-                <PageHeader
-                    title="Dashboard"
-                    breadcrumb={["Home", "Dashboard"]}
-                >
-
-                    <div className="
-                        flex items-center gap-2
-                        bg-[#1b1b24]
-                        px-4 py-2
-                        rounded-xl
-                        border border-[#242335]
-                        text-xs text-gray-400
-                    ">
-
-                        <span>
-                            01.06.2023 - 31.06.2023
-                        </span>
-
-                        <FaCalendarAlt className="text-[#dfb34c]" />
-
-                    </div>
-
-                </PageHeader>
-
-                {/* PROFILE */}
-                <div className="
-                    flex items-center gap-3
-                    mb-6
-                ">
-
-                    <Avatar name="Geta" />
-
-                    <div>
-
-                        <h3 className="font-bold">
-                            Geta Dewi
-                        </h3>
-
-                        <p className="text-sm text-gray-500">
-                            Admin Dashboard
-                        </p>
-
-                    </div>
-
-                </div>
-
-                {/* STATS CARD */}
-                <div className="
-                    grid grid-cols-1
-                    md:grid-cols-3
-                    gap-4
-                    mb-6
-                ">
-
-                    <StatsCard
-                        title="Total Customer"
-                        value="800"
-                    />
-
-                    <StatsCard
-                        title="Total Member"
-                        value="520"
-                    />
-
-                    <StatsCard
-                        title="Total Booking"
-                        value="1245"
-                    />
-
-                </div>
-
-                {/* GRID */}
-                <div className="
-                    grid grid-cols-1
-                    xl:grid-cols-3
-                    gap-7
-                ">
-
-                    {/* LEFT */}
-                    <div className="xl:col-span-2 space-y-6">
-
-                        {/* TOP CARD */}
-                        <div className="
-                            grid grid-cols-1
-                            sm:grid-cols-2
-                            xl:grid-cols-4
-                            gap-4
-                        ">
-
-                            <Card
-                                title="Customer Aktif"
-                                value={stats.active}
-                                subValue="81%"
-                                icon={<FaUsers />}
-                            />
-
-                            <Card
-                                title="Customer Nonaktif"
-                                value={stats.inactive}
-                                subValue="19%"
-                                icon={<FaTimesCircle />}
-                            />
-
-                            <Card
-                                title="Total Member"
-                                value={stats.members}
-                                subValue="65%"
-                                icon={<FaUsers />}
-                            />
-
-                            <Card
-                                title="Revenue"
-                                value={`Rp ${stats.revenue.toLocaleString()}`}
-                                subValue="+12%"
-                                icon={<FaDollarSign />}
-                            />
-
-                        </div>
-
-                        {/* SALES */}
-                        <ChartCard title="Booking Bulanan">
-
-                            <div className="
-                                flex justify-between
-                                items-center
-                                mb-6
-                            ">
-
-                                <h2 className="
-                                    text-lg
-                                    font-bold
-                                    flex items-center gap-2
-                                ">
-
-                                    <FaChartLine className="text-[#dfb34c]" />
-
-                                    Booking Bulanan
-
-                                </h2>
-
-                            </div>
-
-                            <div className="w-full h-[320px]">
-
-                                <ResponsiveContainer
-                                    width="100%"
-                                    height="100%"
-                                >
-
-                                    <AreaChart data={lineData}>
-
-                                        <defs>
-
-                                            <linearGradient
-                                                id="colorVal"
-                                                x1="0"
-                                                y1="0"
-                                                x2="0"
-                                                y2="1"
-                                            >
-
-                                                <stop
-                                                    offset="5%"
-                                                    stopColor="#dfb34c"
-                                                    stopOpacity={0.4}
-                                                />
-
-                                                <stop
-                                                    offset="95%"
-                                                    stopColor="#dfb34c"
-                                                    stopOpacity={0}
-                                                />
-
-                                            </linearGradient>
-
-                                        </defs>
-
-                                        <CartesianGrid
-                                            vertical={false}
-                                            stroke="rgba(255,255,255,0.05)"
-                                        />
-
-                                        <XAxis dataKey="name" />
-
-                                        <YAxis />
-
-                                        <Tooltip />
-
-                                        <Area
-                                            type="monotone"
-                                            dataKey="value"
-                                            stroke="#dfb34c"
-                                            fill="url(#colorVal)"
-                                            strokeWidth={4}
-                                        />
-
-                                    </AreaChart>
-
-                                </ResponsiveContainer>
-
-                            </div>
-
-                        </ChartCard>
-
-                    </div>
-
-                    {/* RIGHT */}
-                    <div className="space-y-6">
-
-                        {/* USERS */}
-                        <div className="
-                            bg-[#1b1b24]
-                            rounded-3xl
-                            border border-[#242335]
-                            p-6
-                        ">
-
-                            <div className="
-                                flex justify-between
-                                items-center
-                                mb-5
-                            ">
-
-                                <h2 className="
-                                    text-xl
-                                    font-bold
-                                ">
-                                    Membership Distribution
-                                </h2>
-
-                                <Badge type="warning">
-                                    LIVE
-                                </Badge>
-
-                            </div>
-
-                            <div className="
-                                h-[300px]
-                                relative
-                            ">
-
-                                <ResponsiveContainer
-                                    width="100%"
-                                    height="100%"
-                                >
-
-                                    <PieChart>
-
-                                        <Pie
-                                            data={statsData}
-                                            dataKey="value"
-                                            innerRadius={80}
-                                            outerRadius={110}
-                                        >
-
-                                            {statsData.map((item, index) => (
-
-                                                <Cell
-                                                    key={index}
-                                                    fill={item.color}
-                                                />
-
-                                            ))}
-
-                                        </Pie>
-
-                                    </PieChart>
-
-                                </ResponsiveContainer>
-
-                            </div>
-
-                        </div>
-
-                        {/* MINI CARD */}
-                        <MiniCard
-                            title="Paid Invoices"
-                            value="$565614"
-                            sub="Current financial state"
-                            icon={
-                                <FaWallet className="text-indigo-400" />
-                            }
-                            progressColor="#c0a9df"
-                        />
-
-                        <MiniCard
-                            title="Funds Received"
-                            value="$425634"
-                            sub="Current financial state"
-                            icon={
-                                <FaCoins className="text-emerald-400" />
-                            }
-                            progressColor="#a1dfb1"
-                        />
-
-                        {/* USER CARD */}
-                        <UserCard
-                            name="Budi Santoso"
-                            role="Barber Specialist"
-                        />
-
-                        <UserCard
-                            name="Siti Rahma"
-                            role="Hair Stylist"
-                        />
-
-                    </div>
-
-                </div>
-
-                {/* BAR */}
-                <div className="
-                    mt-6
-                    bg-[#1b1b24]
-                    rounded-3xl
-                    border border-[#242335]
-                    p-6
-                ">
-
-                    <h2 className="
-                        text-lg
-                        font-bold
-                        mb-5
-                    ">
-                        Profit & Loss
-                    </h2>
-
-                    <div className="h-[250px]">
-
-                        <ResponsiveContainer
-                            width="100%"
-                            height="100%"
-                        >
-
-                            <BarChart data={barData}>
-
-                                <XAxis dataKey="name" />
-
-                                <YAxis />
-
-                                <Tooltip />
-
-                                <Bar
-                                    dataKey="value"
-                                    radius={[12, 12, 0, 0]}
-                                >
-
-                                    {barData.map((entry, index) => (
-
-                                        <Cell
-                                            key={index}
-                                            fill={entry.color}
-                                        />
-
-                                    ))}
-
-                                </Bar>
-
-                            </BarChart>
-
-                        </ResponsiveContainer>
-
-                    </div>
-
-                </div>
-
-
-            </Container>
-
+  const [booking, setBooking] = useState(1245);
+
+  useEffect(() => {
+    const interval = setInterval(() => setBooking((b) => b + 1), 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{
+      background: "#0d0d14", minHeight: "100vh",
+      padding: 24, color: "#fff", fontFamily: "sans-serif",
+    }}>
+      {/* TOP BAR */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <Avatar initials="GD" />
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 500 }}>Geta Dewi</div>
+            <div style={{ fontSize: 12, color: "#888" }}>Admin Dashboard</div>
+          </div>
+        </div>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          background: "#1a1a26", border, borderRadius: 10,
+          padding: "8px 14px", fontSize: 12, color: "#aaa",
+        }}>
+          <span>01 Jun – 30 Jun 2023</span>
+          <span style={{ color: goldColor }}>📅</span>
+        </div>
+      </div>
+
+      {/* STAT CARDS */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+        <StatCard label="Total Customer" value="800" sub="↑ Semua pelanggan" />
+        <StatCard label="Total Member" value="520" sub="↑ 65% dari total" />
+        <StatCard label="Total Booking" value={booking.toLocaleString("id-ID")} sub="Live update setiap 8 detik" />
+      </div>
+
+      {/* MAIN GRID */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }}>
+
+        {/* LEFT */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* MINI CARDS */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+            <MiniCard icon="👥" iconBg="rgba(223,179,76,0.15)" iconColor={goldColor} label="Customer Aktif" value="650" sub="81% dari total" />
+            <MiniCard icon="🚫" iconBg="rgba(226,75,74,0.15)" iconColor="#e24b4a" label="Customer Nonaktif" value="150" sub="19% dari total" />
+            <MiniCard icon="🪪" iconBg="rgba(55,138,221,0.15)" iconColor="#378add" label="Total Member" value="520" sub="65% dari total" />
+            <MiniCard icon="💰" iconBg="rgba(99,153,34,0.15)" iconColor="#639922" label="Revenue" value="Rp 7.500" sub="+12% bulan ini" />
+          </div>
+
+          {/* AREA CHART */}
+          <ChartCard title="Booking Bulanan" icon="📈">
+            <div style={{ height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={lineData}>
+                  <defs>
+                    <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={goldColor} stopOpacity={0.35} />
+                      <stop offset="95%" stopColor={goldColor} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" tick={{ fill: "#666", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#666", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: "#1a1a26", border, borderRadius: 8, color: "#fff", fontSize: 12 }} />
+                  <Area type="monotone" dataKey="value" stroke={goldColor} strokeWidth={2.5} fill="url(#goldGrad)" dot={{ fill: goldColor, r: 4 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartCard>
+
+          {/* BAR CHART */}
+          <ChartCard title="Profit & Loss (Metode Pembayaran)" icon="⚖️">
+            <div style={{ height: 180 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={barData}>
+                  <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" tick={{ fill: "#666", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#666", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: "#1a1a26", border, borderRadius: 8, color: "#fff", fontSize: 12 }} />
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                    {barData.map((entry, index) => (
+                      <Cell key={index} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartCard>
         </div>
 
-    );
+        {/* RIGHT */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
+          {/* DONUT */}
+          <div style={{ background: cardBg, border, borderRadius: radius, padding: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: "#fff" }}>Membership</div>
+              <div style={{
+                fontSize: 10, background: "rgba(223,179,76,0.15)", color: goldColor,
+                border: "0.5px solid rgba(223,179,76,0.3)", borderRadius: 6, padding: "2px 8px",
+              }}>LIVE</div>
+            </div>
+            <div style={{ height: 200 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={statsData} dataKey="value" innerRadius={65} outerRadius={90} paddingAngle={3}>
+                    {statsData.map((item, index) => (
+                      <Cell key={index} fill={item.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "#1a1a26", border, borderRadius: 8, color: "#fff", fontSize: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+              {statsData.map((item) => (
+                <div key={item.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.color }} />
+                    <span style={{ color: "#aaa" }}>{item.name}</span>
+                  </div>
+                  <span style={{ color: "#fff", fontWeight: 500 }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* FINANCE */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <FinCard label="Paid Invoices" value="$565.6K" fillColor="#a78bfa" percent={75} />
+            <FinCard label="Funds Received" value="$425.6K" fillColor="#4ade80" percent={55} />
+          </div>
+
+          {/* STAFF */}
+          <UserCard initials="BS" name="Budi Santoso" role="Barber Specialist" />
+          <UserCard initials="SR" name="Siti Rahma" role="Hair Stylist" />
+        </div>
+
+      </div>
+    </div>
+  );
 }

@@ -1,0 +1,28 @@
+[
+  {
+    "ID_Membership": 1,
+    "Nama_Lengkap": "Muhammad Aidil Albukhori",
+    "Email": "aidil@gmail.com",
+    "No_HP": "08123456789",
+    "Level_Membership": "Gold",
+    "Status_Member": "Aktif",
+    "Total_Poin": 3500,
+    "Total_Redeem": 12,
+    "Total_Kunjungan": 25,
+    "Total_Pengeluaran": 2500000,
+    "Tanggal_Daftar": "2025-01-10"
+  },
+  {
+    "ID_Membership": 2,
+    "Nama_Lengkap": "Andi Saputra",
+    "Email": "andi@gmail.com",
+    "No_HP": "081298765432",
+    "Level_Membership": "Silver",
+    "Status_Member": "Aktif",
+    "Total_Poin": 1200,
+    "Total_Redeem": 5,
+    "Total_Kunjungan": 10,
+    "Total_Pengeluaran": 850000,
+    "Tanggal_Daftar": "2025-03-12"
+  }
+]

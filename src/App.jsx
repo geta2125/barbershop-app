@@ -16,6 +16,7 @@ function App() {
   const Customers = React.lazy(() => import("./pages/Customers"));
   const CustomersDetail = React.lazy(() => import("./pages/CustomersDetail"));
   const Membership = React.lazy(() => import("./pages/Membership"));
+  const MembershipDetail = React.lazy(() => import("./pages/MembershipDetail"));
   const Feedback = React.lazy(() => import("./pages/Feedback"));
   const History = React.lazy(() => import("./pages/History.jsx"));
   const Barber = React.lazy(() => import("./pages/Barber"));
@@ -60,6 +61,7 @@ function App() {
           <Route path="/customers" element={<Customers />} />
           <Route path="/customers/:id" element={<CustomersDetail />} />
           <Route path="/membership" element={<Membership />} />
+          <Route path="/membership/:id" element={<MembershipDetail />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/history" element={<History />} />
           <Route path="/barber" element={<Barber />} />
