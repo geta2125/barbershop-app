@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import BarberSidebar from "../components/sidebar/BarberSidebar";
 import Navbar from "../components/Navbar";
+import Header from "@/components/Header";
 
 export default function BarberLayout() {
     return (
@@ -10,7 +11,7 @@ export default function BarberLayout() {
 
             <div className="flex-1 flex flex-col ml-[280px]">
 
-                <Navbar />
+                <Header />
 
                 <main className="flex-1 p-6 overflow-y-auto">
                     <Outlet />

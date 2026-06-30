@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import MemberSidebar from "../components/sidebar/MemberSidebar";
-import Navbar from "../components/Navbar";
+import Header from "@/components/Header";
 
 export default function MemberLayout() {
     return (
@@ -10,7 +10,7 @@ export default function MemberLayout() {
 
             <div className="flex-1 flex flex-col ml-[280px]">
 
-                <Navbar />
+                <Header />
 
                 <main className="flex-1 p-6 overflow-y-auto">
                     <Outlet />

@@ -18,7 +18,7 @@ export default function AdminLayout() {
     <div className="flex h-screen bg-[#0d0d14]">
       <Sidebar navItems={adminNavItems} />
       <main className="flex-1 flex flex-col overflow-hidden">
-        <Navbar />
+        <Header />
         <div className="flex-1 overflow-y-auto bg-[#0d0d14]">
           {/* Konten halaman (misal: AdminDashboard) akan dirender di sini */}
           <Outlet />
