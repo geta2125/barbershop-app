@@ -1,416 +1,388 @@
-import {
-    FaSearch, FaPlus, FaCalendarAlt, FaUserCircle,
-    FaClock, FaEye, FaTimes, FaCut
-} from "react-icons/fa";
-import {
-    Pagination, PaginationContent, PaginationItem,
-    PaginationLink, PaginationNext, PaginationPrevious,
-} from "@/components/ui/pagination";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { FaSearch, FaPlus, FaCalendarAlt, FaClock, FaEye, FaTimes, FaCut, FaUserTie, FaCoins } from "react-icons/fa";
 import { Link } from "react-router-dom";
-
-import { dataAPI } from "../../services/dataAPI";
-
-import Container  from "../../components/Container";
+import { db } from "../../services/localDB";
+import { bookingService, mapBooking } from "../../services/bookingService";
+import Container from "../../components/Container";
 import PageHeader from "../../components/PageHeader";
-import InputField from "../../components/InputField";
-import Modal      from "../../components/Modal";
-import Badge      from "../../components/Badge";
-import Avatar     from "../../components/Avatar";
 import EmptyState from "../../components/EmptyState";
-import Table      from "../../components/Table";
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function getInitials(name = "") {
-    return name.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("");
-}
-
-const avatarGradients = [
-    "from-violet-600 to-purple-900",
-    "from-sky-600 to-blue-900",
-    "from-emerald-600 to-teal-900",
-    "from-rose-600 to-pink-900",
-    "from-amber-500 to-orange-800",
-];
-function pickGradient(name = "") {
-    return avatarGradients[(name.charCodeAt(0) || 0) % avatarGradients.length];
-}
-
-const statusCfg = {
-    Completed: { dot: "bg-emerald-400", pill: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" },
-    Pending:   { dot: "bg-amber-400 animate-pulse", pill: "bg-amber-500/10 border-amber-500/20 text-amber-400" },
-    Canceled:  { dot: "bg-red-400",   pill: "bg-red-500/10 border-red-500/20 text-red-400" },
-};
-
-function StatusPill({ status }) {
-    const cfg = statusCfg[status] ?? statusCfg.Pending;
-    return (
-        <span className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border ${cfg.pill}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-            {status}
-        </span>
-    );
-}
-
-function formatDate(raw = "") {
-    try {
-        const d = new Date(raw);
-        return {
-            date: d.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }),
-            time: d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
-        };
-    } catch { return { date: raw, time: "" }; }
-}
-
-const getNow = () => {
-    const now = new Date();
-    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-};
-
-// ── Field wrapper (konsisten dengan Users.jsx) ────────────────────────────
-const inputCls   = "w-full bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#A87C2D]/60 focus:ring-1 focus:ring-[#A87C2D]/30 transition-all duration-200";
-const selectCls  = "w-full bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#A87C2D]/60 focus:ring-1 focus:ring-[#A87C2D]/30 transition-all duration-200 appearance-none cursor-pointer";
-
-function Field({ label, children }) {
-    return (
-        <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] tracking-[0.2em] uppercase text-[#A87C2D]/70 font-semibold">{label}</label>
-            {children}
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
+import Table from "../../components/Table";
 
 export default function Booking() {
-    const [search,       setSearch]       = useState("");
-    const [statusFilter, setStatusFilter] = useState("All");
-    const [bookings,     setBookings]     = useState([]);
-    const [services,     setServices]     = useState([]);
-    const [barbers,      setBarbers]      = useState([]);
-    const [showForm,     setShowForm]     = useState(false);
-    const [currentPage,  setCurrentPage]  = useState(1);
-    const [loading,      setLoading]      = useState(true);
-    const [error,        setError]        = useState("");
-    const itemsPerPage = 8;
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [bookings, setBookings] = useState([]);
+  const [services, setServices] = useState([]);
+  const [barbers, setBarbers] = useState([]);
+  
+  const [showModal, setShowModal] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [selectedServiceId, setSelectedServiceId] = useState("");
+  const [selectedBarberId, setSelectedBarberId] = useState("");
+  const [bookingDate, setBookingDate] = useState("");
+  const [bookingTime, setBookingTime] = useState("10:00");
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
 
-    const [form, setForm] = useState({
-        nama_customer: "", barber_id: "", service_id: "",
-        jadwal: getNow(), harga: "", status_booking: "Pending",
-    });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const fetchBookings = () => {
+    setLoading(true);
+    bookingService.getAll()
+      .then((res) => {
+        setBookings(res.data ? res.data.map(mapBooking) : []);
+      })
+      .catch((err) => setError(err.message || "Gagal memuat booking."))
+      .finally(() => setLoading(false));
+  };
 
-    const loadBookingData = async () => {
-        try {
-            setLoading(true);
-            setError("");
-            const [bookingRows, serviceRows, barberRows] = await Promise.all([
-                dataAPI.fetchBookings(),
-                dataAPI.fetchServices(false),
-                dataAPI.fetchBarbers(),
-            ]);
-            setBookings(bookingRows);
-            setServices(serviceRows);
-            setBarbers(barberRows.filter((barber) => barber.status));
-        } catch (err) {
-            setError(err.message || "Gagal memuat booking.");
-        } finally {
-            setLoading(false);
-        }
-    };
+  useEffect(() => {
+    fetchBookings();
+    setServices(db.getServices().filter(s => s.status === "Aktif"));
+    setBarbers(db.getBarbers().filter(b => b.status === "Standby"));
+    
+    const today = new Date().toISOString().split("T")[0];
+    setBookingDate(today);
+  }, []);
 
-    useEffect(() => {
-        loadBookingData();
-    }, []);
+  const handleCreateBooking = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const selectedService = services.find(s => String(s.id) === String(selectedServiceId));
+      
+      const payload = {
+        nama_customer: customerName,
+        email,
+        phone: phone,
+        service_id: Number(selectedServiceId),
+        barber_id: Number(selectedBarberId),
+        jadwal: `${bookingDate}T${bookingTime}`,
+        harga: selectedService ? selectedService.harga : 0,
+        metode_pembayaran: paymentMethod,
+        status_booking: "Pending",
+        catatan: notes || "-"
+      };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        await dataAPI.saveBooking(form);
-        await loadBookingData();
-        setShowForm(false);
-        setForm({ nama_customer: "", barber_id: "", service_id: "", jadwal: getNow(), harga: "", status_booking: "Pending" });
-    };
+      await bookingService.create(payload);
+      
+      setCustomerName("");
+      setEmail("");
+      setPhone("");
+      setSelectedServiceId("");
+      setSelectedBarberId("");
+      setNotes("");
+      setShowModal(false);
+      fetchBookings();
+      alert("Booking baru berhasil ditambahkan!");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menambahkan booking.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    const filtered = bookings.filter(b =>
-        b.nama_customer.toLowerCase().includes(search.toLowerCase()) &&
-        (statusFilter === "All" || b.status_booking === statusFilter)
-    );
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus booking ini?");
+    if (!confirmDelete) return;
 
-    const totalPages  = Math.ceil(filtered.length / itemsPerPage);
-    const currentData = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    try {
+      await bookingService.delete(id);
+      fetchBookings();
+      alert("Booking berhasil dihapus.");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menghapus booking.");
+    }
+  };
 
-    const stats = [
-        { label: "Total Booking",  value: bookings.length,                                 accent: "text-white" },
-        { label: "Completed",      value: bookings.filter(b => b.status_booking === "Completed").length, accent: "text-emerald-400" },
-        { label: "Pending",        value: bookings.filter(b => b.status_booking === "Pending").length,   accent: "text-amber-400" },
-        { label: "Canceled",       value: bookings.filter(b => b.status_booking === "Canceled").length,  accent: "text-red-400" },
-    ];
+  const filtered = bookings.filter(b => {
+    const matchesSearch = 
+      (b.nama_customer && b.nama_customer.toLowerCase().includes(search.toLowerCase())) ||
+      (b.layanan && b.layanan.toLowerCase().includes(search.toLowerCase())) ||
+      (b.barber && b.barber.toLowerCase().includes(search.toLowerCase()));
 
-    return (
-        <div className="w-full min-h-screen bg-[#080807] text-[#D3CDC3] font-sans antialiased">
-            <Container>
+    const matchesStatus = statusFilter === "All" || b.status_booking === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
-                {/* ── HEADER ── */}
-                <PageHeader title="Booking" breadcrumb={["Dashboard", "Booking"]}>
-                    <div className="flex items-center gap-2 bg-[#0D0C0B] border border-white/6 px-4 py-2 rounded-xl text-xs text-white/40">
-                        <FaCalendarAlt className="text-[#A87C2D]" />
-                        <span>Booking Schedule</span>
-                    </div>
-                </PageHeader>
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Completed": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+      case "Canceled": return "bg-red-500/10 text-red-400 border-red-500/20";
+      default: return "bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse";
+    }
+  };
 
-                {/* ── PROFILE STRIP ── */}
-                <div className="flex items-center gap-3 mb-8 p-4 bg-[#0D0C0B] border border-white/5 rounded-2xl">
-                    <Avatar name="Geta" />
-                    <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-sm">Geta Dewi</p>
-                        <p className="text-xs text-white/30">Booking Management</p>
-                    </div>
-                    <span className="hidden sm:flex items-center gap-1.5 text-[10px] text-[#A87C2D]/70 bg-[#A87C2D]/8 border border-[#A87C2D]/15 rounded-full px-3 py-1 font-semibold uppercase tracking-widest">
-                        <FaCut className="text-[9px]" /> GroomGold
-                    </span>
-                </div>
+  const timeSlots = [
+    "09:00", "10:00", "11:00", "12:00", "13:00", 
+    "14:00", "15:00", "16:00", "17:00", "18:00", 
+    "19:00", "20:00", "21:00"
+  ];
 
-                {error && <div className="mb-4 text-sm text-red-400">{error}</div>}
-                {loading && <div className="mb-4 text-sm text-white/40">Memuat booking...</div>}
+  return (
+    <div className="w-full min-h-screen bg-[#0A0A0A] text-[#E5E5E5] space-y-6">
+      <Container>
+        <PageHeader title="Reservations" breadcrumb={["Dashboard", "Booking"]}>
+          <div className="flex items-center gap-2 bg-[#141414] border border-white/5 px-4 py-2 rounded-xl text-xs text-white/40">
+            <FaCalendarAlt className="text-[#dfb34c]" />
+            <span className="text-[#dfb34c] font-bold">Booking Monitor</span>
+          </div>
+        </PageHeader>
 
-                {/* ── STATS ── */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-                    {stats.map(s => (
-                        <div key={s.label} className="bg-[#0D0C0B] border border-white/5 rounded-2xl px-5 py-4 hover:border-white/10 transition-colors duration-200">
-                            <p className="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-1">{s.label}</p>
-                            <p className={`text-3xl font-black ${s.accent}`}>{s.value}</p>
-                        </div>
-                    ))}
-                </div>
+        {error && <div className="mb-4 text-xs font-bold text-red-400 bg-red-500/10 p-3 rounded-xl">⚠️ {error}</div>}
+        {loading && <div className="mb-4 text-xs text-[#dfb34c] animate-pulse">Memuat data booking...</div>}
 
-                {/* ── ACTION BAR ── */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="flex items-center justify-center gap-2 bg-[#A87C2D] hover:bg-[#c49535] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors duration-200"
-                    >
-                        <FaPlus className="text-xs" />
-                        Tambah Booking
-                    </button>
+        {/* CONTROLS */}
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-4 bg-[#141414] border border-white/5 p-4 rounded-2xl shadow-md">
+          <div className="flex gap-2 w-full lg:w-auto">
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#dfb34c] hover:bg-[#BE9359] text-[#111116] font-black text-xs tracking-wider px-5 py-3 rounded-xl transition-all shadow-[0_4px_15px_rgba(223,179,76,0.15)]"
+            >
+              <FaPlus /> Buat Booking
+            </button>
+            
+            <div className="relative flex-1 sm:flex-none">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari booking..."
+                className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#dfb34c]/60"
+              />
+            </div>
+          </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        {/* Search */}
-                        <div className="relative">
-                            <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20 text-xs" />
-                            <input
-                                value={search}
-                                onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                                placeholder="Cari customer..."
-                                className="pl-9 pr-4 py-2.5 bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] placeholder-white/20 rounded-xl text-sm focus:outline-none focus:border-[#A87C2D]/50 transition-all duration-200 w-full sm:w-52"
-                            />
-                        </div>
-
-                        {/* Filter */}
-                        <select
-                            value={statusFilter}
-                            onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                            className="bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#A87C2D]/50 transition-all duration-200 appearance-none cursor-pointer"
-                        >
-                            <option value="All">Semua Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Canceled">Canceled</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* ── MODAL ADD BOOKING ── */}
-                <Modal show={showForm}>
-                    <div className="flex items-start justify-between mb-6">
-                        <div>
-                            <h2 className="text-lg font-bold text-white tracking-wide">Tambah Booking</h2>
-                            <p className="text-xs text-white/30 mt-0.5">Isi data customer dan layanan</p>
-                        </div>
-                        <button
-                            onClick={() => setShowForm(false)}
-                            className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all duration-200"
-                        >
-                            <FaTimes className="text-xs" />
-                        </button>
-                    </div>
-
-                    {/* Gold accent line */}
-                    <div className="w-full h-[1px] bg-gradient-to-r from-[#A87C2D]/60 via-[#A87C2D]/20 to-transparent mb-6" />
-
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Field label="Nama Customer">
-                            <input type="text" name="nama_customer" placeholder="Contoh: Budi Santoso" value={form.nama_customer} onChange={handleChange} required className={inputCls} />
-                        </Field>
-
-                        <Field label="Nama Barber">
-                            <select name="barber_id" value={form.barber_id} onChange={handleChange} required className={selectCls}>
-                                <option value="">Pilih barber...</option>
-                                {barbers.map(barber => (
-                                    <option key={barber.id} value={barber.id}>{barber.name}</option>
-                                ))}
-                            </select>
-                        </Field>
-
-                        <Field label="Layanan">
-                            <select name="service_id" value={form.service_id} onChange={e => {
-                                const s = services.find(x => x.id === e.target.value);
-                                if (s) setForm(prev => ({ ...prev, service_id: s.id, harga: s.harga }));
-                            }} className={selectCls}>
-                                <option value="">Pilih layanan...</option>
-                                {services.map(s => (
-                                    <option key={s.id} value={s.id}>{s.nama_service}</option>
-                                ))}
-                            </select>
-                        </Field>
-
-                        <Field label="Harga (Rp)">
-                            <input type="number" name="harga" placeholder="0" value={form.harga} onChange={handleChange} className={inputCls} />
-                        </Field>
-
-                        <Field label="Jadwal">
-                            <input type="datetime-local" name="jadwal" value={form.jadwal} onChange={handleChange} className={inputCls} />
-                        </Field>
-
-                        <Field label="Status">
-                            <select name="status_booking" value={form.status_booking} onChange={handleChange} className={selectCls}>
-                                <option value="Pending">Pending</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Canceled">Canceled</option>
-                            </select>
-                        </Field>
-
-                        <div className="md:col-span-2 flex gap-3 pt-2 border-t border-white/5 mt-2">
-                            <button type="button" onClick={() => setShowForm(false)}
-                                className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/8 text-white/50 hover:text-white hover:bg-white/8 text-sm font-medium transition-all duration-200">
-                                Batal
-                            </button>
-                            <button type="submit"
-                                className="flex-1 py-2.5 rounded-xl bg-[#A87C2D] hover:bg-[#c49535] text-white text-sm font-semibold transition-colors duration-200">
-                                Simpan Booking
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
-
-                {/* ── TABLE ── */}
-                <div className="bg-[#0D0C0B] border border-white/6 rounded-2xl overflow-hidden mb-6">
-
-                    {/* Table header */}
-                    <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <FaCalendarAlt className="text-[#A87C2D] text-xs" />
-                            <span className="text-xs font-semibold text-white/60 uppercase tracking-widest">Daftar Booking</span>
-                        </div>
-                        {filtered.length > 0 && (
-                            <span className="text-[10px] text-white/25">
-                                {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filtered.length)} dari {filtered.length}
-                            </span>
-                        )}
-                    </div>
-
-                    <Table headers={["Customer", "Layanan", "Barber", "Jadwal", "Harga", "Status", ""]}>
-                        {currentData.map(b => {
-                            const initials  = getInitials(b.nama_customer);
-                            const gradient  = pickGradient(b.nama_customer);
-                            const { date, time } = formatDate(b.jadwal);
-
-                            return (
-                                <tr key={b.id_booking} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors duration-150 group">
-
-                                    {/* Customer */}
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                                                {initials || "?"}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-white text-sm font-semibold truncate">{b.nama_customer}</p>
-                                                <p className="text-white/25 text-[10px] font-mono">#{String(b.id_booking).slice(-5)}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    {/* Layanan */}
-                                    <td className="px-5 py-4 text-sm text-white/60">{b.layanan}</td>
-
-                                    {/* Barber */}
-                                    <td className="px-5 py-4 text-sm text-white/60">{b.barber}</td>
-
-                                    {/* Jadwal */}
-                                    <td className="px-5 py-4">
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-xs text-white/70 font-medium">{date}</span>
-                                            <span className="text-[10px] text-[#A87C2D]/70 flex items-center gap-1">
-                                                <FaClock className="text-[9px]" />{time}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    {/* Harga */}
-                                    <td className="px-5 py-4">
-                                        <span className="text-sm font-bold text-[#A87C2D]">
-                                            Rp {b.harga.toLocaleString("id-ID")}
-                                        </span>
-                                    </td>
-
-                                    {/* Status */}
-                                    <td className="px-5 py-4">
-                                        <StatusPill status={b.status_booking} />
-                                    </td>
-
-                                    {/* Action */}
-                                    <td className="px-5 py-4 text-right">
-                                        <Link
-                                            to={`/booking/${b.id_booking}`}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/8 text-white/40 hover:text-[#A87C2D] hover:border-[#A87C2D]/30 hover:bg-[#A87C2D]/5 text-xs font-medium transition-all duration-200"
-                                        >
-                                            <FaEye className="text-[10px]" />
-                                            Detail
-                                        </Link>
-                                    </td>
-
-                                </tr>
-                            );
-                        })}
-                    </Table>
-
-                    {filtered.length === 0 && <EmptyState title="Tidak ada booking ditemukan." />}
-                </div>
-
-                {/* ── PAGINATION ── */}
-                {totalPages > 1 && (
-                    <div className="flex justify-center pb-8">
-                        <Pagination>
-                            <PaginationContent className="gap-1">
-                                <PaginationItem>
-                                    <PaginationPrevious href="#" onClick={e => { e.preventDefault(); if (currentPage > 1) setCurrentPage(p => p - 1); }}
-                                        className="bg-[#0D0C0B] border border-white/8 text-white/40 hover:text-white hover:border-white/20 rounded-xl text-xs" />
-                                </PaginationItem>
-
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <PaginationItem key={i}>
-                                        <PaginationLink href="#"
-                                            isActive={currentPage === i + 1}
-                                            onClick={e => { e.preventDefault(); setCurrentPage(i + 1); }}
-                                            className={`rounded-xl text-xs w-8 h-8 ${currentPage === i + 1 ? "bg-[#A87C2D] border-[#A87C2D] text-white font-bold" : "bg-[#0D0C0B] border-white/8 text-white/40 hover:text-white hover:border-white/20"}`}
-                                        >
-                                            {i + 1}
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                ))}
-
-                                <PaginationItem>
-                                    <PaginationNext href="#" onClick={e => { e.preventDefault(); if (currentPage < totalPages) setCurrentPage(p => p + 1); }}
-                                        className="bg-[#0D0C0B] border border-white/8 text-white/40 hover:text-white hover:border-white/20 rounded-xl text-xs" />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-                    </div>
-                )}
-
-            </Container>
+          <div className="flex gap-1.5 overflow-x-auto w-full lg:w-auto pb-1 lg:pb-0 scrollbar-thin">
+            {["All", "Pending", "On Going", "Completed", "Canceled"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-2 rounded-lg text-[10px] uppercase tracking-wider font-extrabold transition-all duration-200 ${
+                  statusFilter === status
+                    ? "bg-[#dfb34c] text-[#111116]"
+                    : "bg-[#1a1a1a] border border-white/5 text-[#8e8e9f] hover:bg-white/5"
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
         </div>
-    );
+
+        {/* TABLE */}
+        <div className="bg-[#141414] border border-white/5 rounded-3xl overflow-hidden shadow-xl">
+          <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+            <h3 className="text-xs uppercase tracking-widest text-[#dfb34c] font-black flex items-center gap-2">
+              <FaCalendarAlt /> Live Booking Queue
+            </h3>
+          </div>
+
+          <Table headers={["ID Booking", "Customer", "Layanan", "Barber", "Jadwal", "Biaya", "Status", "Aksi"]}>
+            {filtered.map((b) => (
+              <tr key={b.id_booking} className="border-b border-white/[0.02] hover:bg-white/[0.01] transition-colors">
+                <td className="px-6 py-4 font-mono font-bold text-[#dfb34c]">
+                  #BK-{(10000 + b.id_booking)}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="font-bold text-white">{b.nama_customer}</div>
+                  <div className="text-[10px] text-[#8e8e9f] mt-0.5">{b.no_hp}</div>
+                </td>
+                <td className="px-6 py-4 text-[#8e8e9f]">{b.layanan}</td>
+                <td className="px-6 py-4 text-[#8e8e9f]">
+                  <div className="flex items-center gap-1.5">
+                    <FaUserTie className="text-[#dfb34c]/60" /> {b.barber}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1.5 text-[#8e8e9f]">
+                    <FaClock className="text-[#dfb34c]/60" />
+                    <span>{b.jadwal ? b.jadwal.replace("T", " ") : "-"}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 font-mono font-bold text-white">
+                  Rp {b.harga.toLocaleString("id-ID")}
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border uppercase ${getStatusStyle(b.status_booking)}`}>
+                    {b.status_booking}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/admin/booking/${b.id_booking}`}
+                      className="p-2 bg-white/5 hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 hover:border-[#dfb34c]/20 rounded-lg inline-flex transition-all"
+                    >
+                      <FaEye />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(b.id_booking)}
+                      className="p-2 bg-red-500/5 hover:bg-red-500/10 text-red-400 border border-red-500/10 hover:border-red-500/20 rounded-lg inline-flex transition-all"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </Table>
+
+          {filtered.length === 0 && <EmptyState title="Booking tidak ditemukan" />}
+        </div>
+      </Container>
+
+      {/* CREATE MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#111116] border border-[#242335] rounded-3xl p-6 max-w-lg w-full space-y-6 animate-in fade-in duration-200">
+            <div className="flex justify-between items-center border-b border-white/5 pb-3">
+              <h3 className="text-lg font-bold text-white font-poppins flex items-center gap-2">
+                <FaCalendarAlt className="text-[#dfb34c]" /> Buat Reservasi Baru
+              </h3>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="text-[#8e8e9f] hover:text-white transition-colors"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateBooking} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Nama Customer</label>
+                  <input 
+                    type="text" 
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Nama Pelanggan"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-[#dfb34c]/60"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">No. HP / WhatsApp</label>
+                  <input 
+                    type="tel" 
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Contoh: 0812345..."
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-[#dfb34c]/60"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Pilih Layanan</label>
+                  <select 
+                    value={selectedServiceId}
+                    onChange={(e) => setSelectedServiceId(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                    required
+                  >
+                    <option value="">Pilih Layanan</option>
+                    {services.map(s => (
+                      <option key={s.id} value={s.id}>{s.nama_service} (Rp {s.harga.toLocaleString("id-ID")})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Pilih Barber</label>
+                  <select 
+                    value={selectedBarberId}
+                    onChange={(e) => setSelectedBarberId(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                    required
+                  >
+                    <option value="">Pilih Barber</option>
+                    {barbers.map(b => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Tanggal</label>
+                  <input 
+                    type="date" 
+                    value={bookingDate}
+                    onChange={(e) => setBookingDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Jam Kedatangan</label>
+                  <select 
+                    value={bookingTime}
+                    onChange={(e) => setBookingTime(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                    required
+                  >
+                    {timeSlots.map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Metode Pembayaran</label>
+                  <select 
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                  >
+                    <option value="Cash">Cash di Kasir</option>
+                    <option value="QRIS">QRIS / E-Wallet</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Email (Opsional)</label>
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Catatan Tambahan</label>
+                <textarea 
+                  rows="2"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Keterangan gaya rambut, dll..."
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl p-3 text-xs focus:outline-none focus:border-[#dfb34c]/60"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full bg-[#dfb34c] text-[#111116] font-black text-xs tracking-wider py-4 rounded-xl hover:opacity-90 transition-all disabled:opacity-50"
+              >
+                {saving ? "MENYIMPAN..." : "SIMPAN BOOKING"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

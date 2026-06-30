@@ -1,479 +1,253 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-
-import {
-    FaArrowLeft,
-    FaStar,
-    FaTag,
-    FaClock,
-    FaMoneyBillWave,
-    FaCheckCircle,
-    FaTimesCircle,
-    FaCut,
-    FaRegHeart
-} from "react-icons/fa";
-
-import { dataAPI } from "../../services/dataAPI";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { FaChevronLeft, FaStar, FaTag, FaClock, FaCoins, FaCheckCircle, FaTimesCircle, FaCut, FaEdit, FaTimes, FaSave } from "react-icons/fa";
+import { serviceService, mapService } from "../../services/serviceService";
+import Container from "../../components/Container";
 
 export default function ServicesDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [service, setService] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  
+  // Edit Form State
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("Haircut");
+  const [duration, setDuration] = useState(30);
+  const [price, setPrice] = useState(50000);
+  const [status, setStatus] = useState("Aktif");
+  const [saving, setSaving] = useState(false);
 
-    const { id } = useParams();
-    const [service, setService] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const fetchService = () => {
+    setLoading(true);
+    serviceService.getById(id)
+      .then((res) => {
+        if (res.data) {
+          const mapped = mapService(res.data);
+          setService(mapped);
+          setName(mapped.nama_service);
+          setCategory(mapped.kategori);
+          setDuration(mapped.durasi);
+          setPrice(mapped.harga);
+          setStatus(mapped.status);
+        } else {
+          setError("Layanan tidak ditemukan.");
+        }
+      })
+      .catch((err) => setError(err.message || "Gagal memuat detail layanan."))
+      .finally(() => setLoading(false));
+  };
 
-    useEffect(() => {
-        dataAPI.fetchServiceById(id)
-            .then(setService)
-            .finally(() => setLoading(false));
-    }, [id]);
+  useEffect(() => {
+    fetchService();
+  }, [id]);
 
-    if (loading) {
-        return <div className="w-full h-screen flex items-center justify-center bg-[#0f0f17] text-white">Memuat service...</div>;
+  const handleUpdateService = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await serviceService.update(id, {
+        nama_service: name,
+        kategori: category,
+        durasi: Number(duration),
+        harga: Number(price),
+        status: status
+      });
+      alert("Layanan berhasil diperbarui!");
+      setIsEditing(false);
+      fetchService();
+    } catch (err) {
+      console.error(err);
+      alert("Gagal memperbarui layanan.");
+    } finally {
+      setSaving(false);
     }
+  };
 
-    // NOT FOUND
-    if (!service) {
+  if (loading) {
+    return <div className="w-full h-screen flex items-center justify-center bg-[#0A0A0A] text-[#dfb34c]">Memuat detail layanan...</div>;
+  }
 
-        return (
-
-            <div className="
-                w-full
-                h-screen
-                flex items-center justify-center
-                px-5
-                bg-[#0f0f17]
-                text-white
-            ">
-
-                <div className="
-                    w-full max-w-md
-                    bg-[#1b1b24]
-                    border border-[#242335]
-                    rounded-[28px]
-                    p-8
-                    text-center
-                ">
-
-                    <div className="
-                        w-16 h-16
-                        rounded-full
-                        bg-red-500/10
-                        text-red-400
-                        flex items-center justify-center
-                        text-3xl
-                        mx-auto mb-4
-                    ">
-                        <FaTimesCircle />
-                    </div>
-
-                    <h1 className="text-2xl font-black mb-2">
-                        Service Not Found
-                    </h1>
-
-                    <p className="text-[#8e8e9f] text-sm mb-6">
-                        Data service tidak ditemukan pada sistem GroomGold.
-                    </p>
-
-                    <Link
-                        to="/services"
-                        className="
-                            inline-flex items-center justify-center gap-2
-                            w-full
-                            bg-[#dfb34c]
-                            text-[#111116]
-                            font-black
-                            py-3
-                            rounded-2xl
-                            hover:opacity-90
-                            transition-all duration-300
-                        "
-                    >
-                        <FaArrowLeft />
-                        Back To Services
-                    </Link>
-
-                </div>
-
-            </div>
-
-        );
-
-    }
-
+  if (error || !service) {
     return (
+      <div className="w-full h-screen flex items-center justify-center px-5 bg-[#0A0A0A]">
+        <div className="w-full max-w-md bg-[#141414] border border-white/5 rounded-3xl p-8 text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center text-3xl mx-auto">
+            <FaTimesCircle />
+          </div>
+          <h1 className="text-2xl font-black text-white">Layanan Not Found</h1>
+          <p className="text-[#8e8e9f] text-sm">
+            Layanan dengan ID tersebut tidak terdaftar di sistem.
+          </p>
+          <Link
+            to="/admin/services"
+            className="w-full bg-[#dfb34c] text-[#111116] font-black py-3 rounded-2xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
+          >
+            <FaChevronLeft /> Kembali ke Layanan
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-        <div className="
-            w-full
-            h-screen
-            overflow-hidden
-            bg-[#0f0f17]
-            text-white
-            flex flex-col
-            px-4 lg:px-6
-            py-4
-            gap-3
-        ">
+  return (
+    <div className="max-w-4xl mx-auto px-2 py-4 space-y-6">
+      {/* BACK BUTTON */}
+      <div className="border-b border-white/5 pb-4">
+        <Link
+          to="/admin/services"
+          className="inline-flex items-center gap-1.5 text-xs text-[#dfb34c] hover:underline font-bold"
+        >
+          <FaChevronLeft /> Kembali ke Daftar Layanan
+        </Link>
+      </div>
 
-            {/* HEADER */}
-            <div className="
-                flex flex-col lg:flex-row
-                lg:items-center
-                justify-between
-                gap-3
-                bg-[#1b1b24]
-                border border-[#242335]
-                rounded-[20px]
-                px-5 py-3
-                flex-shrink-0
-            ">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-[#141414] border border-white/5 rounded-3xl overflow-hidden shadow-xl">
+        {/* LEFT — VISUAL PREVIEW */}
+        <div className="md:col-span-5 relative overflow-hidden bg-[#181818] min-h-[250px] md:min-h-full flex items-center justify-center border-b md:border-b-0 md:border-r border-white/5 p-8">
+          <div className="absolute inset-0 bg-gradient-to-tr from-black/85 via-black/40 to-transparent z-10" />
+          <div className="w-24 h-24 rounded-3xl bg-[#dfb34c]/10 border border-[#dfb34c]/20 flex items-center justify-center text-[#dfb34c] text-5xl relative z-20 shadow-lg">
+            <FaCut />
+          </div>
+          <div className="absolute bottom-6 left-6 z-20 space-y-1">
+            <span className="px-2.5 py-0.5 rounded-full text-[8px] font-extrabold bg-[#dfb34c]/20 text-[#dfb34c] border border-[#dfb34c]/30 uppercase">
+              {service.kategori}
+            </span>
+            <h3 className="text-lg font-black text-white">{service.nama_service}</h3>
+          </div>
+        </div>
 
+        {/* RIGHT — DETAILS / FORM */}
+        <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between">
+          {!isEditing ? (
+            <div className="space-y-6">
+              <div className="flex justify-between items-start">
                 <div>
-
-                    {/* BREADCRUMB */}
-                    <div className="
-                        flex items-center gap-2
-                        text-xs
-                        text-[#8e8e9f]
-                        mb-1
-                    ">
-                        <Link to="/" className="hover:text-[#dfb34c] transition">
-                            Dashboard
-                        </Link>
-                        <span>/</span>
-                        <Link to="/services" className="hover:text-[#dfb34c] transition">
-                            Services
-                        </Link>
-                        <span>/</span>
-                        <span className="text-white font-semibold">Detail</span>
-                    </div>
-
-                    {/* TITLE */}
-                    <h1 className="text-xl lg:text-2xl font-black">
-                        Service
-                        <span className="text-[#dfb34c]"> Details</span>
-                    </h1>
-
+                  <span className="text-[9px] uppercase tracking-[3px] font-black text-gray-500">Service Specs</span>
+                  <h2 className="text-2xl font-black text-white font-poppins mt-1">Detail Layanan</h2>
                 </div>
-
-                {/* BUTTON */}
-                <Link
-                    to="/services"
-                    className="
-                        inline-flex items-center gap-2
-                        bg-[#242335]
-                        border border-[#323244]
-                        hover:border-[#dfb34c]/20
-                        hover:bg-[#2c2c3d]
-                        px-4 py-2
-                        rounded-xl
-                        text-xs
-                        font-bold
-                        transition-all duration-300
-                        w-fit
-                    "
+                
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-1.5 bg-[#dfb34c]/10 hover:bg-[#dfb34c]/25 border border-[#dfb34c]/20 hover:border-[#dfb34c]/40 text-[#dfb34c] font-bold text-xs px-3 py-2 rounded-xl transition-all"
                 >
-                    <FaArrowLeft />
-                    Back To Services
-                </Link>
+                  <FaEdit /> Edit Menu
+                </button>
+              </div>
 
-            </div>
-
-            {/* MAIN CARD */}
-            <div className="
-                flex-1
-                min-h-0
-                bg-[#1b1b24]
-                border border-[#242335]
-                rounded-[24px]
-                overflow-hidden
-                grid grid-cols-1 lg:grid-cols-12
-            ">
-
-                {/* LEFT — IMAGE */}
-                <div className="
-                    lg:col-span-5
-                    relative
-                    overflow-hidden
-                    border-b lg:border-b-0
-                    lg:border-r border-[#242335]
-                    bg-[#14141d]
-                ">
-
-                    <div className="relative w-full h-full min-h-[200px] group">
-
-                        <img
-                            src={`/img/services/${service.gambar}`}
-                            alt={service.nama_service}
-                            className="
-                                w-full h-full
-                                object-cover
-                                group-hover:scale-105
-                                transition-all duration-500
-                            "
-                        />
-
-                        {/* OVERLAY */}
-                        <div className="
-                            absolute inset-0
-                            bg-gradient-to-t
-                            from-black/70
-                            via-black/20
-                            to-transparent
-                        " />
-
-                        {/* STATUS */}
-                        <div className="absolute top-4 left-4">
-                            <span className={`
-                                inline-flex items-center gap-2
-                                px-3 py-1.5
-                                rounded-full
-                                text-[9px]
-                                uppercase
-                                tracking-[1px]
-                                font-black
-                                ${service.status === "Aktif"
-                                    ? "bg-green-500/15 text-green-400 border border-green-500/20"
-                                    : "bg-red-500/15 text-red-400 border border-red-500/20"
-                                }
-                            `}>
-                                {service.status === "Aktif"
-                                    ? <FaCheckCircle />
-                                    : <FaTimesCircle />
-                                }
-                                {service.status}
-                            </span>
-                        </div>
-
-                        {/* FAVORITE */}
-                        <button className="
-                            absolute top-4 right-4
-                            w-9 h-9
-                            rounded-xl
-                            bg-[#1b1b24]/90
-                            border border-[#323244]
-                            flex items-center justify-center
-                            text-gray-400
-                            hover:text-pink-400
-                            hover:border-pink-400/20
-                            transition-all duration-300
-                        ">
-                            <FaRegHeart />
-                        </button>
-
-                    </div>
-
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div className="bg-[#1c1c1c] border border-white/5 p-4 rounded-2xl">
+                  <span className="text-[9px] uppercase text-gray-500 font-bold block">Durasi Kerja</span>
+                  <p className="font-mono font-bold text-white mt-1.5 flex items-center gap-1.5"><FaClock className="text-[#dfb34c]" /> {service.durasi} Menit</p>
                 </div>
 
-                {/* RIGHT — CONTENT */}
-                <div className="
-                    lg:col-span-7
-                    p-4 lg:p-5
-                    flex flex-col justify-between
-                    min-h-0
-                    overflow-hidden
-                ">
+                <div className="bg-[#1c1c1c] border border-white/5 p-4 rounded-2xl">
+                  <span className="text-[9px] uppercase text-gray-500 font-bold block">Status Menu</span>
+                  <p className={`font-bold mt-1.5 flex items-center gap-1.5 ${service.status === "Aktif" ? "text-emerald-400" : "text-red-400"}`}>
+                    {service.status === "Aktif" ? <FaCheckCircle /> : <FaTimesCircle />} {service.status}
+                  </p>
+                </div>
+              </div>
 
-                    <div>
+              <div className="border-t border-white/5 pt-4 space-y-1">
+                <span className="text-[9px] uppercase text-gray-500 font-bold block">Harga / Tarif Layanan</span>
+                <h1 className="text-3xl font-black text-[#dfb34c] font-mono">Rp {service.harga.toLocaleString("id-ID")}</h1>
+              </div>
 
-                        {/* CATEGORY */}
-                        <div className="
-                            inline-flex items-center gap-2
-                            bg-[#dfb34c]/10
-                            text-[#dfb34c]
-                            px-3 py-1.5
-                            rounded-full
-                            text-[9px]
-                            font-black
-                            uppercase
-                            tracking-[1px]
-                            mb-3
-                        ">
-                            <FaTag className="text-[9px]" />
-                            {service.kategori}
-                        </div>
+              <p className="text-xs text-[#8e8e9f] leading-relaxed pt-2">
+                Setiap perubahan pada durasi atau harga layanan ini akan langsung diperbarui di formulir booking baru untuk pelanggan (member) maupun walk-in kasir.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleUpdateService} className="space-y-4">
+              <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                <h3 className="font-bold text-white text-base">Edit Rincian Menu</h3>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="text-xs text-[#8e8e9f] hover:text-white"
+                >
+                  Batal
+                </button>
+              </div>
 
-                        {/* TITLE */}
-                        <h2 className="
-                            text-2xl lg:text-3xl
-                            font-black
-                            leading-tight
-                            mb-2
-                        ">
-                            {service.nama_service}
-                        </h2>
+              <div className="space-y-1.5">
+                <label className="text-[9px] uppercase text-[#dfb34c] font-bold block">Nama Layanan</label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-[#dfb34c]/60"
+                  required
+                />
+              </div>
 
-                        {/* DESCRIPTION */}
-                        <p className="
-                            text-[#8e8e9f]
-                            text-sm
-                            leading-relaxed
-                            mb-3
-                        ">
-                            Premium haircut & grooming service dari GroomGold
-                            dengan kualitas barber profesional dan hasil stylish
-                            modern untuk penampilan terbaik.
-                        </p>
-
-                        {/* RATING */}
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="
-                                flex items-center gap-1
-                                bg-yellow-500/10
-                                px-3 py-1.5
-                                rounded-lg
-                            ">
-                                {[...Array(5)].map((_, i) => (
-                                    <FaStar key={i} className="text-yellow-400 text-xs" />
-                                ))}
-                            </div>
-                            <span className="text-xs font-bold">5.0 Rating</span>
-                            <span className="
-                                text-xs
-                                text-[#8e8e9f]
-                                border-l border-[#323244]
-                                pl-3
-                            ">
-                                Premium Service
-                            </span>
-                        </div>
-
-                        {/* INFO GRID */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-                            <InfoCard
-                                icon={<FaCut />}
-                                title="Service Type"
-                                value={service.nama_service}
-                                iconBg="bg-[#dfb34c]/10"
-                                iconColor="text-[#dfb34c]"
-                            />
-
-                            <InfoCard
-                                icon={<FaClock />}
-                                title="Duration"
-                                value={`${service.durasi} Minutes`}
-                                iconBg="bg-purple-500/10"
-                                iconColor="text-purple-400"
-                            />
-
-                            <InfoCard
-                                icon={<FaMoneyBillWave />}
-                                title="Price"
-                                value={`Rp ${service.harga.toLocaleString()}`}
-                                iconBg="bg-green-500/10"
-                                iconColor="text-green-400"
-                            />
-
-                            <InfoCard
-                                icon={<FaCheckCircle />}
-                                title="Availability"
-                                value={
-                                    service.status === "Aktif"
-                                        ? "Ready Booking"
-                                        : "Unavailable"
-                                }
-                                iconBg="bg-pink-500/10"
-                                iconColor="text-pink-400"
-                            />
-
-                        </div>
-
-                    </div>
-
-                    {/* BOTTOM */}
-                    <div className="
-                        mt-4
-                        pt-4
-                        border-t border-[#242335]
-                        flex flex-col sm:flex-row
-                        items-center gap-4
-                    ">
-
-                        {/* PRICE */}
-                        <div className="flex-1 w-full">
-                            <p className="text-[#8e8e9f] text-xs mb-1">
-                                Starting Price
-                            </p>
-                            <h1 className="text-2xl lg:text-3xl font-black text-[#dfb34c]">
-                                Rp {service.harga.toLocaleString()}
-                            </h1>
-                        </div>
-
-                        {/* BUTTON */}
-                        <button className="
-                            w-full sm:w-auto
-                            flex items-center justify-center gap-2
-                            bg-[#dfb34c]
-                            hover:opacity-90
-                            text-[#111116]
-                            px-6 py-3
-                            rounded-xl
-                            font-black
-                            text-sm
-                            transition-all duration-300
-                            shadow-[0_8px_24px_rgba(223,179,76,0.15)]
-                        ">
-                            <FaCut />
-                            Book Service
-                        </button>
-
-                    </div>
-
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase text-[#dfb34c] font-bold block">Kategori</label>
+                  <select 
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                  >
+                    <option value="Haircut">Haircut</option>
+                    <option value="Grooming">Grooming</option>
+                    <option value="Treatment">Treatment</option>
+                  </select>
                 </div>
 
-            </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase text-[#dfb34c] font-bold block">Durasi (Menit)</label>
+                  <input 
+                    type="number" 
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                    required
+                    min="5"
+                  />
+                </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase text-[#dfb34c] font-bold block">Tarif Layanan (Rp)</label>
+                  <input 
+                    type="number" 
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                    required
+                    min="0"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase text-[#dfb34c] font-bold block">Status Aktif</label>
+                  <select 
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                  >
+                    <option value="Aktif">Aktif</option>
+                    <option value="Non-Aktif">Non-Aktif</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full bg-[#dfb34c] text-[#111116] font-black text-xs py-3.5 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                <FaSave /> {saving ? "MENYIMPAN..." : "SIMPAN PERUBAHAN"}
+              </button>
+            </form>
+          )}
         </div>
-
-    );
-
-}
-
-// INFO CARD
-function InfoCard({ icon, title, value, iconBg, iconColor }) {
-
-    return (
-
-        <div className="
-            flex items-center gap-3
-            bg-[#14141d]
-            border border-[#242335]
-            rounded-xl
-            p-3
-            hover:border-[#dfb34c]/10
-            transition-all duration-300
-        ">
-
-            <div className={`
-                w-10 h-10
-                rounded-xl
-                flex items-center justify-center
-                text-sm
-                flex-shrink-0
-                ${iconBg}
-                ${iconColor}
-            `}>
-                {icon}
-            </div>
-
-            <div>
-                <p className="
-                    text-[9px]
-                    uppercase
-                    tracking-[2px]
-                    text-[#8e8e9f]
-                    font-bold
-                    mb-0.5
-                ">
-                    {title}
-                </p>
-                <h4 className="text-sm font-black leading-tight">
-                    {value}
-                </h4>
-            </div>
-
-        </div>
-
-    );
-
+      </div>
+    </div>
+  );
 }

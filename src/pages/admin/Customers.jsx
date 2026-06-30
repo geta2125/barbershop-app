@@ -1,375 +1,321 @@
-import {
-    FaSearch, FaPlus, FaCalendarAlt, FaUserCircle,
-    FaEye, FaTimes, FaCut
-} from "react-icons/fa";
-import {
-    Pagination, PaginationContent, PaginationItem,
-    PaginationLink, PaginationNext, PaginationPrevious,
-} from "@/components/ui/pagination";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
-import dataCustomers from "../../data/datacustomers.json";
-
-import Container  from "../../components/Container";
+import { FaSearch, FaPlus, FaCalendarAlt, FaUser, FaEye, FaTimes, FaCut, FaEdit, FaEnvelope, FaPhone } from "react-icons/fa";
+import { customerService, mapCustomer } from "../../services/customerService";
+import { db } from "../../services/localDB";
+import Container from "../../components/Container";
 import PageHeader from "../../components/PageHeader";
-import InputField from "../../components/InputField";
-import Modal      from "../../components/Modal";
-import Avatar     from "../../components/Avatar";
 import EmptyState from "../../components/EmptyState";
-import Table      from "../../components/Table";
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function getInitials(name = "") {
-    return name.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("");
-}
-
-const avatarGradients = [
-    "from-violet-600 to-purple-900",
-    "from-sky-600 to-blue-900",
-    "from-emerald-600 to-teal-900",
-    "from-rose-600 to-pink-900",
-    "from-amber-500 to-orange-800",
-];
-function pickGradient(name = "") {
-    return avatarGradients[(name.charCodeAt(0) || 0) % avatarGradients.length];
-}
-
-// ── Field wrapper (konsisten dengan Booking.jsx) ──────────────────────────
-const inputCls   = "w-full bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#A87C2D]/60 focus:ring-1 focus:ring-[#A87C2D]/30 transition-all duration-200";
-const selectCls  = "w-full bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#A87C2D]/60 focus:ring-1 focus:ring-[#A87C2D]/30 transition-all duration-200 appearance-none cursor-pointer";
-
-function Field({ label, children }) {
-    return (
-        <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] tracking-[0.2em] uppercase text-[#A87C2D]/70 font-semibold">{label}</label>
-            {children}
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
+import Table from "../../components/Table";
 
 export default function Customers() {
-    const [search,       setSearch]       = useState("");
-    const [statusFilter, setStatusFilter] = useState("All");
-    const [customers,    setCustomers]    = useState(dataCustomers);
-    const [showForm,     setShowForm]     = useState(false);
-    const [currentPage,  setCurrentPage]  = useState(1);
-    const itemsPerPage = 50; // Disamakan dengan booking agar serasi posisinya
+  const [search, setSearch] = useState("");
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    const searchRef = useRef(null);
-    useEffect(() => {
-        searchRef.current?.focus();
-    }, []);
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState("Laki-laki");
+  const [tier, setTier] = useState("Bronze");
+  const [saving, setSaving] = useState(false);
 
-    const [form, setForm] = useState({
-        Nama_Lengkap: "", Email: "", No_HP: "",
-        Status_Member: "Member", Level_Membership: "Silver", Status_Aktif: "Aktif"
-    });
+  const fetchCustomers = () => {
+    setLoading(true);
+    customerService.getAll()
+      .then((res) => {
+        setCustomers(res.data ? res.data.map(mapCustomer) : []);
+      })
+      .catch((err) => setError(err.message || "Gagal memuat customer."))
+      .finally(() => setLoading(false));
+  };
 
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const newCustomer = {
-            ID_Customer: Date.now(), // Menggunakan ID yang unik konsisten seperti booking
-            ...form,
-            No_HP: Number(form.No_HP) || 0,
-            Total_Transaksi: 0,
-            Total_Pengeluaran: 0,
-            Kota: "Pekanbaru",
-            Tanggal_Daftar: new Date().toISOString().split('T')[0] + " 00:00:00"
-        };
+  const handleCreateCustomer = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const list = db.getCustomers();
+      const newId = list.length > 0 ? Math.max(...list.map(c => c.ID_Customer || 0)) + 1 : 1;
+      
+      const newRow = {
+        ID_Customer: newId,
+        id: newId,
+        Nama_Lengkap: name,
+        Email: email,
+        No_HP: phone,
+        Jenis_Kelamin: gender,
+        Tanggal_Daftar: new Date().toISOString().split("T")[0] + " 00:00:00",
+        Status_Member: "Member",
+        Level_Membership: tier,
+        Status_Aktif: "Aktif",
+        Total_Transaksi: 0,
+        Total_Pengeluaran: 0
+      };
 
-        setCustomers(prev => [newCustomer, ...prev]);
-        setForm({ Nama_Lengkap: "", Email: "", No_HP: "", Status_Member: "Member", Level_Membership: "Silver", Status_Aktif: "Aktif" });
-        setShowForm(false);
-    };
+      list.unshift(newRow);
+      db.saveCustomers(list);
+      
+      // Also add to memberships list
+      const memberships = db.getMemberships();
+      if (!memberships.some(m => m.Email === email || m.No_HP === phone)) {
+        const newMId = memberships.length > 0 ? Math.max(...memberships.map(m => m.ID_Membership || 0)) + 1 : 1;
+        memberships.unshift({
+          ID_Membership: newMId,
+          id: newMId,
+          Nama_Lengkap: name,
+          Email: email,
+          No_HP: phone,
+          Level_Membership: tier,
+          Status_Member: "Aktif",
+          Total_Poin: 100,
+          Total_Redeem: 0,
+          Total_Kunjungan: 0,
+          Total_Pengeluaran: 0,
+          Tanggal_Daftar: new Date().toISOString().split("T")[0]
+        });
+        db.saveMemberships(memberships);
+      }
 
-    const filtered = customers.filter(c =>
-        (c.Nama_Lengkap || "").toLowerCase().includes(search.toLowerCase()) &&
-        (statusFilter === "All" || c.Status_Aktif === statusFilter)
-    );
+      setName("");
+      setEmail("");
+      setPhone("");
+      setGender("Laki-laki");
+      setTier("Bronze");
+      setShowModal(false);
+      fetchCustomers();
+      alert("Customer baru berhasil ditambahkan!");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menambahkan customer.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    const totalPages  = Math.ceil(filtered.length / itemsPerPage);
-    const currentData = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus customer ini?");
+    if (!confirmDelete) return;
 
-    const stats = [
-        { label: "Total Customers", value: customers.length,                                                 accent: "text-white" },
-        { label: "Active",          value: customers.filter(c => c.Status_Aktif === "Aktif").length,         accent: "text-emerald-400" },
-        { label: "Inactive",        value: customers.filter(c => c.Status_Aktif === "Tidak Aktif").length,   accent: "text-red-400" },
-        { label: "Members",         value: customers.filter(c => c.Status_Member === "Member").length,       accent: "text-amber-400" },
-    ];
+    try {
+      await customerService.delete(id);
+      fetchCustomers();
+      alert("Customer berhasil dihapus.");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menghapus customer.");
+    }
+  };
 
-    return (
-        <div className="w-full min-h-screen bg-[#080807] text-[#D3CDC3] font-sans antialiased">
-            <Container>
+  const filtered = customers.filter(c => 
+    (c.Nama_Lengkap && c.Nama_Lengkap.toLowerCase().includes(search.toLowerCase())) ||
+    (c.Email && c.Email.toLowerCase().includes(search.toLowerCase())) ||
+    (c.No_HP && String(c.No_HP).includes(search))
+  );
 
-                {/* ── HEADER ── */}
-                <PageHeader title="Customers" breadcrumb={["Dashboard", "Customers"]}>
-                    <div className="flex items-center gap-2 bg-[#0D0C0B] border border-white/6 px-4 py-2 rounded-xl text-xs text-white/40">
-                        <FaCalendarAlt className="text-[#A87C2D]" />
-                        <span>Customer Database</span>
-                    </div>
-                </PageHeader>
+  const getTierColor = (level) => {
+    switch (level) {
+      case "Gold": return "bg-[#dfb34c]/10 text-[#dfb34c] border-[#dfb34c]/20";
+      case "Silver": return "bg-gray-300/10 text-gray-300 border-gray-300/20";
+      case "Bronze": return "bg-amber-600/10 text-amber-500 border-amber-600/20";
+      default: return "bg-sky-500/10 text-sky-400 border-sky-500/20";
+    }
+  };
 
-                {/* ── PROFILE STRIP ── */}
-                <div className="flex items-center gap-3 mb-8 p-4 bg-[#0D0C0B] border border-white/5 rounded-2xl">
-                    <Avatar name="Geta" />
-                    <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-sm">Geta Dewi</p>
-                        <p className="text-xs text-white/30">Customer Management</p>
-                    </div>
-                    <span className="hidden sm:flex items-center gap-1.5 text-[10px] text-[#A87C2D]/70 bg-[#A87C2D]/8 border border-[#A87C2D]/15 rounded-full px-3 py-1 font-semibold uppercase tracking-widest">
-                        <FaCut className="text-[9px]" /> GroomGold
-                    </span>
-                </div>
+  return (
+    <div className="w-full min-h-screen bg-[#0A0A0A] text-[#E5E5E5] space-y-6">
+      <Container>
+        <PageHeader title="Customers" breadcrumb={["Dashboard", "Customers"]}>
+          <div className="flex items-center gap-2 bg-[#141414] border border-white/5 px-4 py-2 rounded-xl text-xs text-white/40">
+            <FaUser className="text-[#dfb34c]" />
+            <span className="text-[#dfb34c] font-bold">Client Directory</span>
+          </div>
+        </PageHeader>
 
-                {/* ── STATS ── */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-                    {stats.map(s => (
-                        <div key={s.label} className="bg-[#0D0C0B] border border-white/5 rounded-2xl px-5 py-4 hover:border-white/10 transition-colors duration-200">
-                            <p className="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-1">{s.label}</p>
-                            <p className={`text-3xl font-black ${s.accent}`}>{s.value}</p>
-                        </div>
-                    ))}
-                </div>
+        {error && <div className="mb-4 text-xs font-bold text-red-400 bg-red-500/10 p-3 rounded-xl">⚠️ {error}</div>}
+        {loading && <div className="mb-4 text-xs text-[#dfb34c] animate-pulse">Memuat data customer...</div>}
 
-                {/* ── ACTION BAR ── */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="flex items-center justify-center gap-2 bg-[#A87C2D] hover:bg-[#c49535] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors duration-200"
-                    >
-                        <FaPlus className="text-xs" />
-                        Tambah Customer
-                    </button>
+        {/* CONTROLS */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#141414] border border-white/5 p-4 rounded-2xl shadow-md">
+          <button
+            onClick={() => setShowModal(true)}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#dfb34c] hover:bg-[#BE9359] text-[#111116] font-black text-xs tracking-wider px-5 py-3.5 rounded-xl transition-all shadow-[0_4px_15px_rgba(223,179,76,0.15)]"
+          >
+            <FaPlus /> Tambah Customer
+          </button>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        {/* Search */}
-                        <div className="relative">
-                            <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20 text-xs" />
-                            <input
-                                ref={searchRef}
-                                value={search}
-                                onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                                placeholder="Cari customer..."
-                                className="pl-9 pr-4 py-2.5 bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] placeholder-white/20 rounded-xl text-sm focus:outline-none focus:border-[#A87C2D]/50 transition-all duration-200 w-full sm:w-52"
-                            />
-                        </div>
-
-                        {/* Filter */}
-                        <select
-                            value={statusFilter}
-                            onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                            className="bg-[#0D0C0B] border border-white/8 text-[#D3CDC3] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#A87C2D]/50 transition-all duration-200 appearance-none cursor-pointer"
-                        >
-                            <option value="All">Semua Status</option>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Tidak Aktif">Tidak Aktif</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* ── MODAL ADD CUSTOMER ── */}
-                <Modal show={showForm}>
-                    <div className="flex items-start justify-between mb-6">
-                        <div>
-                            <h2 className="text-lg font-bold text-white tracking-wide">Tambah Customer</h2>
-                            <p className="text-xs text-white/30 mt-0.5">Tambahkan customer baru GroomGold</p>
-                        </div>
-                        <button
-                            onClick={() => setShowForm(false)}
-                            className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all duration-200"
-                        >
-                            <FaTimes className="text-xs" />
-                        </button>
-                    </div>
-
-                    {/* Gold accent line */}
-                    <div className="w-full h-[1px] bg-gradient-to-r from-[#A87C2D]/60 via-[#A87C2D]/20 to-transparent mb-6" />
-
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Field label="Full Name">
-                            <input type="text" name="Nama_Lengkap" placeholder="Contoh: Budi Santoso" value={form.Nama_Lengkap} onChange={handleChange} required className={inputCls} />
-                        </Field>
-
-                        <Field label="Email Address">
-                            <input type="email" name="Email" placeholder="budi@example.com" value={form.Email} onChange={handleChange} required className={inputCls} />
-                        </Field>
-
-                        <Field label="Phone Number">
-                            <input type="text" name="No_HP" placeholder="6281234..." value={form.No_HP} onChange={handleChange} required className={inputCls} />
-                        </Field>
-
-                        <Field label="Status Aktif">
-                            <select name="Status_Aktif" value={form.Status_Aktif} onChange={handleChange} className={selectCls}>
-                                <option value="Aktif">Aktif</option>
-                                <option value="Tidak Aktif">Tidak Aktif</option>
-                            </select>
-                        </Field>
-
-                        <Field label="Status Member">
-                            <select name="Status_Member" value={form.Status_Member} onChange={handleChange} className={selectCls}>
-                                <option value="Member">Member</option>
-                                <option value="Non Member">Non Member</option>
-                            </select>
-                        </Field>
-
-                        <Field label="Level Membership">
-                            <select name="Level_Membership" value={form.Level_Membership} onChange={handleChange} className={selectCls}>
-                                <option value="Silver">Silver</option>
-                                <option value="Gold">Gold</option>
-                                <option value="Platinum">Platinum</option>
-                            </select>
-                        </Field>
-
-                        <div className="md:col-span-2 flex gap-3 pt-2 border-t border-white/5 mt-2">
-                            <button type="button" onClick={() => setShowForm(false)}
-                                className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/8 text-white/50 hover:text-white hover:bg-white/8 text-sm font-medium transition-all duration-200">
-                                Batal
-                            </button>
-                            <button type="submit"
-                                className="flex-1 py-2.5 rounded-xl bg-[#A87C2D] hover:bg-[#c49535] text-white text-sm font-semibold transition-colors duration-200">
-                                Simpan Customer
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
-
-                {/* ── TABLE ── */}
-                <div className="bg-[#0D0C0B] border border-white/6 rounded-2xl overflow-hidden mb-6">
-
-                    {/* Table header */}
-                    <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <FaUserCircle className="text-[#A87C2D] text-xs" />
-                            <span className="text-xs font-semibold text-white/60 uppercase tracking-widest">Daftar Customer</span>
-                        </div>
-                        {filtered.length > 0 && (
-                            <span className="text-[10px] text-white/25">
-                                {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filtered.length)} dari {filtered.length}
-                            </span>
-                        )}
-                    </div>
-
-                    <Table headers={["Customer", "Contact", "Membership", "Level", "Status", ""]}>
-                        {currentData.map(c => {
-                            const initials = getInitials(c.Nama_Lengkap);
-                            const gradient = pickGradient(c.Nama_Lengkap);
-
-                            return (
-                                <tr key={c.ID_Customer} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors duration-150 group">
-
-                                    {/* Customer */}
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                                                {initials || "?"}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-white text-sm font-semibold truncate">{c.Nama_Lengkap}</p>
-                                                <p className="text-white/25 text-[10px] font-mono">#{String(c.ID_Customer).slice(-5)}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    {/* Contact */}
-                                    <td className="px-5 py-4">
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-xs text-white/70 font-medium">{c.Email}</span>
-                                            <span className="text-[10px] text-white/40">+{c.No_HP}</span>
-                                        </div>
-                                    </td>
-
-                                    {/* Membership */}
-                                    <td className="px-5 py-4">
-                                        {c.Status_Member === "Member" ? (
-                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold bg-[#A87C2D]/10 text-[#A87C2D] border border-[#A87C2D]/20">
-                                                Member
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold bg-white/5 text-white/40 border border-white/10">
-                                                Non Member
-                                            </span>
-                                        )}
-                                    </td>
-
-                                    {/* Level */}
-                                    <td className="px-5 py-4">
-                                        <span className="inline-block font-bold text-[#A87C2D] bg-[#A87C2D]/5 px-2 py-0.5 rounded border border-[#A87C2D]/15 text-[10px] tracking-wider uppercase">
-                                            {c.Level_Membership || "-"}
-                                        </span>
-                                    </td>
-
-                                    {/* Status */}
-                                    <td className="px-5 py-4">
-                                        {c.Status_Aktif === "Aktif" ? (
-                                            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border bg-emerald-500/10 border-emerald-500/20 text-emerald-400">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                                Aktif
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border bg-red-500/10 border-red-500/20 text-red-400">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                                                Tidak Aktif
-                                            </span>
-                                        )}
-                                    </td>
-
-                                    {/* Action */}
-                                    <td className="px-5 py-4 text-right">
-                                        <Link
-                                            to={`/customers/${c.ID_Customer}`}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/8 text-white/40 hover:text-[#A87C2D] hover:border-[#A87C2D]/30 hover:bg-[#A87C2D]/5 text-xs font-medium transition-all duration-200"
-                                        >
-                                            <FaEye className="text-[10px]" />
-                                            Detail
-                                        </Link>
-                                    </td>
-
-                                </tr>
-                            );
-                        })}
-                    </Table>
-
-                    {filtered.length === 0 && <EmptyState title="Tidak ada customer ditemukan." />}
-                </div>
-
-                {/* ── PAGINATION ── */}
-                {totalPages > 1 && (
-                    <div className="flex justify-center pb-8">
-                        <Pagination>
-                            <PaginationContent className="gap-1">
-                                <PaginationItem>
-                                    <PaginationPrevious href="#" onClick={e => { e.preventDefault(); if (currentPage > 1) setCurrentPage(p => p - 1); }}
-                                        className="bg-[#0D0C0B] border border-white/8 text-white/40 hover:text-white hover:border-white/20 rounded-xl text-xs" />
-                                </PaginationItem>
-
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <PaginationItem key={i}>
-                                        <PaginationLink href="#"
-                                            isActive={currentPage === i + 1}
-                                            onClick={e => { e.preventDefault(); setCurrentPage(i + 1); }}
-                                            className={`rounded-xl text-xs w-8 h-8 ${currentPage === i + 1 ? "bg-[#A87C2D] border-[#A87C2D] text-white font-bold" : "bg-[#0D0C0B] border-white/8 text-white/40 hover:text-white hover:border-white/20"}`}
-                                        >
-                                            {i + 1}
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                ))}
-
-                                <PaginationItem>
-                                    <PaginationNext href="#" onClick={e => { e.preventDefault(); if (currentPage < totalPages) setCurrentPage(p => p + 1); }}
-                                        className="bg-[#0D0C0B] border border-white/8 text-white/40 hover:text-white hover:border-white/20 rounded-xl text-xs" />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-                    </div>
-                )}
-
-            </Container>
+          <div className="relative w-full sm:w-72">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari customer..."
+              className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#dfb34c]/60"
+            />
+          </div>
         </div>
-    );
+
+        {/* TABLE */}
+        <div className="bg-[#141414] border border-white/5 rounded-3xl overflow-hidden shadow-xl">
+          <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+            <h3 className="text-xs uppercase tracking-widest text-[#dfb34c] font-black flex items-center gap-2">
+              <FaUser /> Customer List
+            </h3>
+          </div>
+
+          <Table headers={["Nama Pelanggan", "Kontak", "Membership", "Total Transaksi", "Pengeluaran", "Aksi"]}>
+            {filtered.map((c) => (
+              <tr key={c.ID_Customer} className="border-b border-white/[0.02] hover:bg-white/[0.01] transition-colors">
+                <td className="px-6 py-4">
+                  <div className="font-bold text-white flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-[#dfb34c]/10 text-[#dfb34c] flex items-center justify-center text-xs border border-[#dfb34c]/15">
+                      {c.Nama_Lengkap ? c.Nama_Lengkap.charAt(0).toUpperCase() : "C"}
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">{c.Nama_Lengkap}</p>
+                      <p className="text-[9px] text-gray-500 uppercase tracking-wider">{c.Jenis_Kelamin}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-xs text-[#8e8e9f] space-y-0.5">
+                    <p className="flex items-center gap-1.5"><FaEnvelope className="text-white/20" /> {c.Email || "-"}</p>
+                    <p className="flex items-center gap-1.5"><FaPhone className="text-white/20" /> {c.No_HP || "-"}</p>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase border ${getTierColor(c.Level_Membership)}`}>
+                    {c.Level_Membership}
+                  </span>
+                </td>
+                <td className="px-6 py-4 font-mono font-bold text-white">
+                  {c.Total_Transaksi || 0}x Kunjungan
+                </td>
+                <td className="px-6 py-4 font-mono font-bold text-[#dfb34c]">
+                  Rp {(c.Total_Pengeluaran || 0).toLocaleString("id-ID")}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/admin/customers/${c.ID_Customer}`}
+                      className="p-2 bg-white/5 hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 hover:border-[#dfb34c]/20 rounded-lg inline-flex transition-all"
+                    >
+                      <FaEye />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(c.ID_Customer)}
+                      className="p-2 bg-red-500/5 hover:bg-red-500/10 text-red-400 border border-red-500/10 hover:border-red-500/20 rounded-lg inline-flex transition-all"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </Table>
+
+          {filtered.length === 0 && <EmptyState title="Customer tidak ditemukan" />}
+        </div>
+      </Container>
+
+      {/* CREATE MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#111116] border border-[#242335] rounded-3xl p-6 max-w-md w-full space-y-6 animate-in fade-in duration-200">
+            <div className="flex justify-between items-center border-b border-white/5 pb-3">
+              <h3 className="text-lg font-bold text-white font-poppins flex items-center gap-2">
+                <FaPlus className="text-[#dfb34c]" /> Tambah Customer Baru
+              </h3>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="text-[#8e8e9f] hover:text-white transition-colors"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCustomer} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Nama Lengkap</label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nama Lengkap Customer"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-[#dfb34c]/60"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Email</label>
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-[#dfb34c]/60"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">No. HP / WhatsApp</label>
+                <input 
+                  type="tel" 
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="081234567..."
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-[#dfb34c]/60"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Jenis Kelamin</label>
+                  <select 
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                  >
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase text-[#dfb34c] font-bold block">Level Membership</label>
+                  <select 
+                    value={tier}
+                    onChange={(e) => setTier(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white rounded-xl px-4 py-3 text-xs focus:outline-none"
+                  >
+                    <option value="Bronze">Bronze</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Platinum">Platinum</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full bg-[#dfb34c] text-[#111116] font-black text-xs tracking-wider py-4 rounded-xl hover:opacity-90 transition-all disabled:opacity-50"
+              >
+                {saving ? "MENYIMPAN..." : "SIMPAN CUSTOMER"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

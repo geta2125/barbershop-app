@@ -1,527 +1,212 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-
-import {
-    FaArrowLeft,
-    FaUserCircle,
-    FaClock,
-    FaMoneyBillWave,
-    FaCheckCircle,
-    FaTimesCircle,
-    FaCalendarAlt,
-    FaCut,
-    FaUserTie,
-    FaStar,
-    FaRegHeart
-} from "react-icons/fa";
-
-import { dataAPI } from "../../services/dataAPI";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { FaChevronLeft, FaClock, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaCut, FaUserTie, FaUser, FaCoins, FaRegStickyNote, FaCreditCard, FaExchangeAlt } from "react-icons/fa";
+import { bookingService, mapBooking } from "../../services/bookingService";
+import Container from "../../components/Container";
 
 export default function BookingDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
-    const { id } = useParams();
-    const [booking, setBooking] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const fetchBooking = () => {
+    setLoading(true);
+    bookingService.getById(id)
+      .then((res) => {
+        if (res.data) {
+          setBooking(mapBooking(res.data));
+        }
+      })
+      .finally(() => setLoading(false));
+  };
 
-    useEffect(() => {
-        dataAPI.fetchBookingById(id)
-            .then(setBooking)
-            .finally(() => setLoading(false));
-    }, [id]);
+  useEffect(() => {
+    fetchBooking();
+  }, [id]);
 
-    if (loading) {
-        return <div className="w-full h-screen flex items-center justify-center bg-[#0f0f17] text-white">Memuat booking...</div>;
+  const handleUpdateStatus = async (newStatus) => {
+    setUpdating(true);
+    try {
+      const payload = { status_booking: newStatus };
+      if (newStatus === "Completed") {
+        payload.status_pembayaran = "Lunas";
+      }
+      await bookingService.update(id, payload);
+      alert(`Status reservasi berhasil diubah menjadi ${newStatus}`);
+      fetchBooking();
+    } catch (e) {
+      console.error(e);
+      alert("Gagal memperbarui status.");
+    } finally {
+      setUpdating(false);
     }
+  };
 
-    // NOT FOUND
-    if (!booking) {
+  if (loading) {
+    return <div className="w-full h-screen flex items-center justify-center bg-[#0A0A0A] text-[#dfb34c]">Memuat detail booking...</div>;
+  }
 
-        return (
+  if (!booking) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center px-5 bg-[#0A0A0A]">
+        <div className="w-full max-w-md bg-[#141414] border border-white/5 rounded-3xl p-8 text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center text-3xl mx-auto">
+            <FaTimesCircle />
+          </div>
+          <h1 className="text-2xl font-black text-white">Booking Not Found</h1>
+          <p className="text-[#8e8e9f] text-sm">
+            Data booking tidak ditemukan pada sistem GroomGold.
+          </p>
+          <Link
+            to="/admin/booking"
+            className="w-full bg-[#dfb34c] text-[#111116] font-black py-3 rounded-2xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
+          >
+            <FaChevronLeft /> Kembali ke Booking
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-            <div className="
-                w-full
-                h-screen
-                flex items-center justify-center
-                px-5
-                bg-[#0f0f17]
-                text-white
-            ">
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Completed": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+      case "On Going": return "text-sky-400 bg-sky-500/10 border-sky-500/20";
+      case "Canceled": return "text-red-400 bg-red-500/10 border-red-500/20";
+      default: return "text-amber-400 bg-amber-500/10 border-amber-500/20 animate-pulse";
+    }
+  };
 
-                <div className="
-                    w-full max-w-md
-                    bg-[#1b1b24]
-                    border border-[#242335]
-                    rounded-[28px]
-                    p-8
-                    text-center
-                ">
+  return (
+    <div className="max-w-4xl mx-auto px-2 py-4 space-y-6">
+      {/* BACK BUTTON */}
+      <div className="border-b border-white/5 pb-4">
+        <Link
+          to="/admin/booking"
+          className="inline-flex items-center gap-1.5 text-xs text-[#dfb34c] hover:underline font-bold"
+        >
+          <FaChevronLeft /> Kembali ke Daftar Booking
+        </Link>
+      </div>
 
-                    <div className="
-                        w-16 h-16
-                        rounded-full
-                        bg-red-500/10
-                        text-red-400
-                        flex items-center justify-center
-                        text-3xl
-                        mx-auto mb-4
-                    ">
-                        <FaTimesCircle />
-                    </div>
-
-                    <h1 className="text-2xl font-black mb-2">
-                        Booking Not Found
-                    </h1>
-
-                    <p className="text-[#8e8e9f] text-sm mb-6">
-                        Data booking tidak ditemukan pada sistem GroomGold.
-                    </p>
-
-                    <Link
-                        to="/booking"
-                        className="
-                            inline-flex items-center justify-center gap-2
-                            w-full
-                            bg-[#dfb34c]
-                            text-[#111116]
-                            font-black
-                            py-3
-                            rounded-2xl
-                            hover:opacity-90
-                            transition-all duration-300
-                        "
-                    >
-                        <FaArrowLeft />
-                        Back To Booking
-                    </Link>
-
-                </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* DETAILS CARD */}
+        <div className="md:col-span-2 space-y-6">
+          <div className="bg-[#141414] border border-white/5 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-[9px] uppercase tracking-[3px] font-black text-[#dfb34c]">Reservation Receipt</span>
+                <h2 className="text-xl font-black text-white font-poppins mt-1">#BK-{(10000 + booking.id_booking)}</h2>
+              </div>
+              <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase border ${getStatusColor(booking.status_booking)}`}>
+                {booking.status_booking}
+              </span>
             </div>
 
-        );
+            <div className="grid grid-cols-2 gap-6 pt-4 border-t border-white/5 text-xs">
+              <div className="space-y-1">
+                <span className="text-[9px] uppercase text-gray-500 font-bold block">Customer</span>
+                <p className="font-bold text-white flex items-center gap-1.5"><FaUser className="text-[#dfb34c]/60" /> {booking.nama_customer}</p>
+                <p className="text-[#8e8e9f]">{booking.no_hp}</p>
+                {booking.email && <p className="text-[#8e8e9f]">{booking.email}</p>}
+              </div>
 
-    }
+              <div className="space-y-1">
+                <span className="text-[9px] uppercase text-gray-500 font-bold block">Jadwal Kedatangan</span>
+                <p className="font-bold text-white flex items-center gap-1.5"><FaCalendarAlt className="text-[#dfb34c]/60" /> {booking.jadwal ? booking.jadwal.replace("T", " ") : "-"}</p>
+                <p className="text-[#8e8e9f]">Durasi layanan: {booking.durasi || 30} menit</p>
+              </div>
 
-    return (
+              <div className="space-y-1">
+                <span className="text-[9px] uppercase text-gray-500 font-bold block">Barber Capster</span>
+                <p className="font-bold text-white flex items-center gap-1.5"><FaUserTie className="text-[#dfb34c]/60" /> {booking.barber}</p>
+              </div>
 
-        <div className="
-            w-full
-            h-screen
-            overflow-hidden
-            bg-[#0f0f17]
-            text-white
-            flex flex-col
-            px-4 lg:px-6
-            py-4
-            gap-3
-        ">
+              <div className="space-y-1">
+                <span className="text-[9px] uppercase text-gray-500 font-bold block">Layanan</span>
+                <p className="font-bold text-white flex items-center gap-1.5"><FaCut className="text-[#dfb34c]/60" /> {booking.layanan}</p>
+              </div>
+            </div>
 
-            {/* HEADER */}
-            <div className="
-                flex flex-col lg:flex-row
-                lg:items-center
-                justify-between
-                gap-3
-                bg-[#1b1b24]
-                border border-[#242335]
-                rounded-[20px]
-                px-5 py-3
-                flex-shrink-0
-            ">
+            <div className="pt-4 border-t border-white/5 space-y-2 text-xs">
+              <span className="text-[9px] uppercase text-gray-500 font-bold block">Catatan Tambahan</span>
+              <p className="bg-white/[0.02] border border-white/5 rounded-xl p-3 text-[#8e8e9f] italic">
+                "{booking.catatan || "-"}"
+              </p>
+            </div>
+          </div>
+        </div>
 
-                <div>
+        {/* OPERATIONS & BILLING */}
+        <div className="bg-[#141414] border border-white/5 rounded-3xl p-6 h-fit space-y-6 shadow-xl">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider">Rincian Pembayaran</h3>
 
-                    {/* BREADCRUMB */}
-                    <div className="
-                        flex items-center gap-2
-                        text-xs
-                        text-[#8e8e9f]
-                        mb-1
-                    ">
-                        <Link to="/" className="hover:text-[#dfb34c] transition">
-                            Dashboard
-                        </Link>
+          <div className="space-y-3 pb-4 border-b border-white/5 text-xs text-[#8e8e9f]">
+            <div className="flex justify-between">
+              <span>Biaya Layanan</span>
+              <span className="font-mono text-white">Rp {booking.harga.toLocaleString("id-ID")}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Metode Bayar</span>
+              <span className="font-bold text-[#dfb34c] uppercase">{booking.metode_pembayaran}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Status Bayar</span>
+              <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+                booking.status_pembayaran === "Lunas" || booking.status_booking === "Completed"
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  : "bg-red-500/10 text-red-400 border-red-500/20"
+              }`}>
+                {booking.status_pembayaran === "Lunas" || booking.status_booking === "Completed" ? "Lunas" : "Belum Lunas"}
+              </span>
+            </div>
+          </div>
 
-                        <span>/</span>
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-bold text-white uppercase">Total Biaya</span>
+            <span className="font-mono font-black text-lg text-[#dfb34c]">
+              Rp {booking.harga.toLocaleString("id-ID")}
+            </span>
+          </div>
 
-                        <Link to="/booking" className="hover:text-[#dfb34c] transition">
-                            Booking
-                        </Link>
-
-                        <span>/</span>
-
-                        <span className="text-white font-semibold">
-                            Detail
-                        </span>
-
-                    </div>
-
-                    {/* TITLE */}
-                    <h1 className="text-xl lg:text-2xl font-black">
-                        Booking
-                        <span className="text-[#dfb34c]"> Details</span>
-                    </h1>
-
-                </div>
-
-                {/* BUTTON */}
-                <Link
-                    to="/booking"
-                    className="
-                        inline-flex items-center gap-2
-                        bg-[#242335]
-                        border border-[#323244]
-                        hover:border-[#dfb34c]/20
-                        hover:bg-[#2c2c3d]
-                        px-4 py-2
-                        rounded-xl
-                        text-xs
-                        font-bold
-                        transition-all duration-300
-                        w-fit
-                    "
+          {/* STATUS TRANSITION BUTTONS */}
+          {booking.status_booking !== "Completed" && booking.status_booking !== "Canceled" && (
+            <div className="space-y-2.5 pt-2 border-t border-white/5">
+              <span className="text-[9px] uppercase text-gray-500 font-bold block">Ubah Status Kerja</span>
+              
+              {booking.status_booking === "Pending" && (
+                <button
+                  onClick={() => handleUpdateStatus("On Going")}
+                  disabled={updating}
+                  className="w-full bg-sky-500 text-black font-black text-xs py-3 rounded-xl hover:opacity-90 transition-all flex justify-center items-center gap-1.5 shadow-[0_4px_15px_rgba(14,165,233,0.2)]"
                 >
-                    <FaArrowLeft />
-                    Back To Booking
-                </Link>
+                  <FaExchangeAlt /> MULAI LAYANAN
+                </button>
+              )}
 
+              {booking.status_booking === "On Going" && (
+                <button
+                  onClick={() => handleUpdateStatus("Completed")}
+                  disabled={updating}
+                  className="w-full bg-[#dfb34c] text-black font-black text-xs py-3 rounded-xl hover:opacity-90 transition-all flex justify-center items-center gap-1.5 shadow-[0_4px_15px_rgba(223,179,76,0.2)]"
+                >
+                  <FaCheckCircle /> SELESAI & CHECKOUT
+                </button>
+              )}
+
+              <button
+                onClick={() => handleUpdateStatus("Canceled")}
+                disabled={updating}
+                className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 font-bold text-xs py-3 rounded-xl transition-all"
+              >
+                BATALKAN RESERVASI
+              </button>
             </div>
-
-            {/* MAIN CARD */}
-            <div className="
-                flex-1
-                min-h-0
-                bg-[#1b1b24]
-                border border-[#242335]
-                rounded-[24px]
-                overflow-hidden
-                grid grid-cols-1 lg:grid-cols-12
-            ">
-
-                {/* LEFT */}
-                <div className="
-                    lg:col-span-5
-                    relative
-                    overflow-hidden
-                    border-b lg:border-b-0
-                    lg:border-r border-[#242335]
-                    bg-[#14141d]
-                    flex items-center justify-center
-                    p-8
-                ">
-
-                    <div className="w-full">
-
-                        {/* ICON */}
-                        <div className="
-                            w-36 h-36
-                            mx-auto
-                            rounded-full
-                            bg-[#242335]
-                            border border-[#323244]
-                            flex items-center justify-center
-                            text-[#dfb34c]
-                            text-7xl
-                            mb-6
-                        ">
-                            <FaUserCircle />
-                        </div>
-
-                        {/* CUSTOMER */}
-                        <div className="text-center">
-
-                            <h2 className="
-                                text-3xl
-                                font-black
-                                mb-2
-                            ">
-                                {booking.nama_customer}
-                            </h2>
-
-                            <p className="
-                                text-sm
-                                text-[#8e8e9f]
-                                mb-6
-                            ">
-                                Premium GroomGold Customer
-                            </p>
-
-                            {/* STATUS */}
-                            <span className={`
-                                inline-flex items-center gap-2
-                                px-4 py-2
-                                rounded-full
-                                text-xs
-                                uppercase
-                                tracking-[1px]
-                                font-black
-                                ${booking.status_booking === "Completed"
-                                    ? "bg-green-500/15 text-green-400 border border-green-500/20"
-                                    : booking.status_booking === "Pending"
-                                        ? "bg-yellow-500/15 text-yellow-400 border border-yellow-500/20"
-                                        : "bg-red-500/15 text-red-400 border border-red-500/20"
-                                }
-                            `}>
-
-                                {booking.status_booking === "Completed"
-                                    ? <FaCheckCircle />
-                                    : booking.status_booking === "Pending"
-                                        ? <FaClock />
-                                        : <FaTimesCircle />
-                                }
-
-                                {booking.status_booking}
-
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                    {/* FAVORITE */}
-                    <button className="
-                        absolute top-4 right-4
-                        w-10 h-10
-                        rounded-xl
-                        bg-[#1b1b24]/90
-                        border border-[#323244]
-                        flex items-center justify-center
-                        text-gray-400
-                        hover:text-pink-400
-                        hover:border-pink-400/20
-                        transition-all duration-300
-                    ">
-                        <FaRegHeart />
-                    </button>
-
-                </div>
-
-                {/* RIGHT */}
-                <div className="
-                    lg:col-span-7
-                    p-5
-                    flex flex-col justify-between
-                    overflow-hidden
-                ">
-
-                    <div>
-
-                        {/* BADGE */}
-                        <div className="
-                            inline-flex items-center gap-2
-                            bg-[#dfb34c]/10
-                            text-[#dfb34c]
-                            px-3 py-1.5
-                            rounded-full
-                            text-[9px]
-                            font-black
-                            uppercase
-                            tracking-[1px]
-                            mb-3
-                        ">
-                            <FaCalendarAlt className="text-[9px]" />
-                            Booking Schedule
-                        </div>
-
-                        {/* TITLE */}
-                        <h2 className="
-                            text-2xl lg:text-3xl
-                            font-black
-                            leading-tight
-                            mb-2
-                        ">
-                            {booking.layanan}
-                        </h2>
-
-                        {/* DESCRIPTION */}
-                        <p className="
-                            text-[#8e8e9f]
-                            text-sm
-                            leading-relaxed
-                            mb-4
-                        ">
-                            Booking layanan premium GroomGold dengan barber
-                            profesional dan pengalaman grooming modern terbaik.
-                        </p>
-
-                        {/* RATING */}
-                        <div className="flex items-center gap-3 mb-5">
-
-                            <div className="
-                                flex items-center gap-1
-                                bg-yellow-500/10
-                                px-3 py-1.5
-                                rounded-lg
-                            ">
-
-                                {[...Array(5)].map((_, i) => (
-                                    <FaStar
-                                        key={i}
-                                        className="text-yellow-400 text-xs"
-                                    />
-                                ))}
-
-                            </div>
-
-                            <span className="text-xs font-bold">
-                                5.0 Booking Rating
-                            </span>
-
-                        </div>
-
-                        {/* INFO GRID */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-                            <InfoCard
-                                icon={<FaUserCircle />}
-                                title="Customer"
-                                value={booking.nama_customer}
-                                iconBg="bg-[#dfb34c]/10"
-                                iconColor="text-[#dfb34c]"
-                            />
-
-                            <InfoCard
-                                icon={<FaUserTie />}
-                                title="Barber"
-                                value={booking.barber}
-                                iconBg="bg-purple-500/10"
-                                iconColor="text-purple-400"
-                            />
-
-                            <InfoCard
-                                icon={<FaCut />}
-                                title="Service"
-                                value={booking.layanan}
-                                iconBg="bg-pink-500/10"
-                                iconColor="text-pink-400"
-                            />
-
-                            <InfoCard
-                                icon={<FaClock />}
-                                title="Schedule"
-                                value={booking.jadwal}
-                                iconBg="bg-blue-500/10"
-                                iconColor="text-blue-400"
-                            />
-
-                        </div>
-
-                    </div>
-
-                    {/* BOTTOM */}
-                    <div className="
-                        mt-5
-                        pt-5
-                        border-t border-[#242335]
-                        flex flex-col sm:flex-row
-                        items-center gap-4
-                    ">
-
-                        {/* PRICE */}
-                        <div className="flex-1 w-full">
-
-                            <p className="text-[#8e8e9f] text-xs mb-1">
-                                Total Payment
-                            </p>
-
-                            <h1 className="
-                                text-2xl lg:text-3xl
-                                font-black
-                                text-[#dfb34c]
-                            ">
-                                Rp {booking.harga.toLocaleString()}
-                            </h1>
-
-                        </div>
-
-                        {/* BUTTON */}
-                        <button className="
-                            w-full sm:w-auto
-                            flex items-center justify-center gap-2
-                            bg-[#dfb34c]
-                            hover:opacity-90
-                            text-[#111116]
-                            px-6 py-3
-                            rounded-xl
-                            font-black
-                            text-sm
-                            transition-all duration-300
-                            shadow-[0_8px_24px_rgba(223,179,76,0.15)]
-                        ">
-                            <FaCheckCircle />
-                            Confirm Booking
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+          )}
         </div>
-
-    );
-
-}
-
-// INFO CARD
-function InfoCard({
-    icon,
-    title,
-    value,
-    iconBg,
-    iconColor
-}) {
-
-    return (
-
-        <div className="
-            flex items-center gap-3
-            bg-[#14141d]
-            border border-[#242335]
-            rounded-xl
-            p-3
-            hover:border-[#dfb34c]/10
-            transition-all duration-300
-        ">
-
-            <div className={`
-                w-10 h-10
-                rounded-xl
-                flex items-center justify-center
-                text-sm
-                flex-shrink-0
-                ${iconBg}
-                ${iconColor}
-            `}>
-                {icon}
-            </div>
-
-            <div>
-
-                <p className="
-                    text-[9px]
-                    uppercase
-                    tracking-[2px]
-                    text-[#8e8e9f]
-                    font-bold
-                    mb-0.5
-                ">
-                    {title}
-                </p>
-
-                <h4 className="
-                    text-sm
-                    font-black
-                    leading-tight
-                ">
-                    {value}
-                </h4>
-
-            </div>
-
-        </div>
-
-    );
-
+      </div>
+    </div>
+  );
 }
