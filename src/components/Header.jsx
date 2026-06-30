@@ -20,8 +20,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, User, Settings, LogOut, Edit } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+    const { logout, profile } = useAuth();
+    const navigate = useNavigate();
+
     // Inisialisasi state langsung dari localStorage untuk mencegah screen flicker saat refresh
     const [darkMode, setDarkMode] = useState(() => {
         if (typeof window !== "undefined") {
@@ -41,9 +46,44 @@ export default function Header() {
         }
     }, [darkMode]);
 
-    const handleLogout = () => {
-        localStorage.removeItem("user");
-        window.location.href = "/login";
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate("/");
+        } catch (err) {
+            console.error("Logout error:", err);
+            localStorage.removeItem("user");
+            window.location.href = "/";
+        }
+    };
+
+    const getProfileLink = () => {
+        if (!profile) return "/";
+        switch (profile.role) {
+            case "admin": return "/admin/settings";
+            case "owner": return "/owner/settings";
+            case "barber": return "/barber/profile";
+            case "member": return "/member/profile";
+            default: return "/";
+        }
+    };
+
+    const getSettingsLink = () => {
+        if (!profile) return "/";
+        switch (profile.role) {
+            case "admin": return "/admin/settings";
+            case "owner": return "/owner/settings";
+            case "barber": return "/barber/profile";
+            case "member": return "/member/profile";
+            default: return "/";
+        }
+    };
+
+    // Format role for display
+    const formatRole = (role) => {
+        if (!role) return "";
+        if (role === "admin") return "Administrator";
+        return role.charAt(0).toUpperCase() + role.slice(1);
     };
 
     return (
@@ -63,7 +103,7 @@ export default function Header() {
                 <h1 className={`text-xl font-black tracking-wider transition-colors duration-300 ${darkMode ? "text-white" : "text-gray-900"}`}>
                     Groom<span className="text-[#dfb34c]">Gold</span>
                 </h1>
-
+ 
                 {/* DATE DISPLAY */}
                 <div
                     className={`
@@ -118,20 +158,26 @@ export default function Header() {
                             `}
                         >
                             <div className="relative">
-                                <img
-                                    src="/img/cewe.jpg"
-                                    alt="User Avatar"
-                                    className="w-10 h-10 rounded-xl object-cover border border-[#dfb34c]/30 group-hover:border-[#dfb34c] transition-all duration-300"
-                                />
+                                {profile?.avatar_url ? (
+                                    <img
+                                        src={profile.avatar_url}
+                                        alt="User Avatar"
+                                        className="w-10 h-10 rounded-xl object-cover border border-[#dfb34c]/30 group-hover:border-[#dfb34c] transition-all duration-300"
+                                    />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-xl bg-[#dfb34c]/10 text-[#dfb34c] border border-[#dfb34c]/20 flex items-center justify-center font-bold text-xs uppercase">
+                                        {(profile?.name || profile?.full_name || "U").charAt(0)}
+                                    </div>
+                                )}
                                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#16161e] rounded-full"></span>
                             </div>
 
                             <div className="flex flex-col items-start leading-tight">
                                 <span className={`text-xs font-bold tracking-wide transition-colors duration-300 ${darkMode ? "text-white" : "text-gray-800"}`}>
-                                    Geta Dewi Artika Sari
+                                    {profile?.full_name || profile?.name || "Guest"}
                                 </span>
-                                <span className={`text-[10px] font-medium ${darkMode ? "text-[#8e8e9f]" : "text-gray-400"}`}>
-                                    Administrator
+                                <span className={`text-[10px] font-medium ${darkMode ? "text-[#dfb34c]" : "text-[#dfb34c]/80"}`}>
+                                    {formatRole(profile?.role)}
                                 </span>
                             </div>
                             
@@ -152,26 +198,35 @@ export default function Header() {
                     >
                         <DropdownMenuLabel className="px-3 py-2.5">
                             <div className="flex flex-col gap-0.5">
-                                <span className="text-xs font-bold tracking-wide">Geta Dewi Artika Sari</span>
+                                <span className="text-xs font-bold tracking-wide">{profile?.full_name || profile?.name || "Guest"}</span>
                                 <span className={`text-[10px] font-medium ${darkMode ? "text-[#8e8e9f]" : "text-gray-400"}`}>
-                                    getadewi@groomgold.com
+                                    {profile?.email || "No email"}
                                 </span>
                             </div>
                         </DropdownMenuLabel>
 
                         <DropdownMenuSeparator className={darkMode ? "bg-[#242335] my-1" : "bg-gray-100 my-1"} />
 
-                        <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl cursor-pointer transition-colors focus:bg-[#dfb34c]/10 focus:text-[#dfb34c]">
+                        <DropdownMenuItem 
+                            onClick={() => navigate(getProfileLink())}
+                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl cursor-pointer transition-colors focus:bg-[#dfb34c]/10 focus:text-[#dfb34c]"
+                        >
                             <User size={15} />
                             Profile
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl cursor-pointer transition-colors focus:bg-[#dfb34c]/10 focus:text-[#dfb34c]">
+                        <DropdownMenuItem 
+                            onClick={() => navigate(getProfileLink())}
+                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl cursor-pointer transition-colors focus:bg-[#dfb34c]/10 focus:text-[#dfb34c]"
+                        >
                             <Edit size={15} />
                             Edit Profile
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl cursor-pointer transition-colors focus:bg-[#dfb34c]/10 focus:text-[#dfb34c]">
+                        <DropdownMenuItem 
+                            onClick={() => navigate(getSettingsLink())}
+                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl cursor-pointer transition-colors focus:bg-[#dfb34c]/10 focus:text-[#dfb34c]"
+                        >
                             <Settings size={15} />
                             Settings
                         </DropdownMenuItem>
