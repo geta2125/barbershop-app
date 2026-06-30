@@ -6,12 +6,19 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import { HiOutlineCheckCircle } from "react-icons/hi2";
-import { usersAPI } from "../../services/usersAPI";
+import { supabase } from "../../lib/supabaseClient";
+import { useAuth } from "../../contexts/auth-context";
 
 export default function Login() {
     const navigate = useNavigate();
     const location = useLocation();
     const emailRef = useRef(null);
+
+    const {
+        login,
+        refreshProfile,
+        redirectPath,
+    } = useAuth();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -24,7 +31,7 @@ export default function Login() {
         password: "",
     });
 
-    // Efek membaca data kiriman setelah sukses daftar akun
+    // Membaca data kiriman setelah sukses daftar akun
     useEffect(() => {
         if (location.state?.successMessage) {
             setSuccessMsg(location.state.successMessage);
@@ -46,38 +53,61 @@ export default function Login() {
     };
 
     // ==========================================
-    // PROSES SUBMIT LOGIN (YANG SUDAH DIPERBAIKI)
+    // PROSES SUBMIT LOGIN
     // ==========================================
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         try {
             setLoading(true);
             setError("");
             setSuccessMsg("");
 
-            const user = await usersAPI.login(
+            // login() dari AuthContext sudah menangani loadProfile secara internal.
+            // Tidak perlu query manual ke public.users di sini.
+            const { error: loginError } = await login(
                 dataForm.email.trim(),
                 dataForm.password.trim()
             );
 
-            localStorage.setItem(
-                "user",
-                JSON.stringify(user)
-            );
+            if (loginError) throw loginError;
 
-            localStorage.setItem(
-                "auth_token",
-                "logged_in"
-            );
+            // Pastikan profile ter-refresh sebelum navigasi
+            await refreshProfile();
 
-            console.log("LOGIN SUCCESS =", user);
-
-            navigate("/dashboard");
-        }
-        catch (err) {
-            console.log(err);
-            setError(err.response?.data?.message || "Login gagal, silakan coba lagi.");
+            navigate(redirectPath, {
+                replace: true,
+            });
+        } catch (err) {
+            console.error(err);
+            if (err.message === "Invalid login credentials") {
+                setError("Email atau kata sandi yang Anda masukkan salah.");
+            } else if (err.status === 429 || err.message?.toLowerCase().includes("rate limit")) {
+                setError("Terlalu banyak percobaan masuk. Silakan tunggu beberapa menit.");
+            } else {
+                setError(err.message || "Terjadi kesalahan saat masuk.");
+            }
         } finally {
+            setLoading(false);
+        }
+    };
+
+    // ==========================================
+    // PROSES LOGIN DENGAN GOOGLE
+    // ==========================================
+    const handleGoogleLogin = async () => {
+        try {
+            setLoading(true);
+            setError("");
+            const { error: authError } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                    redirectTo: `${window.location.origin}/dashboard`,
+                },
+            });
+            if (authError) throw authError;
+        } catch (err) {
+            setError(err.message || "Gagal masuk dengan Google.");
             setLoading(false);
         }
     };
@@ -159,6 +189,7 @@ export default function Login() {
                                 id="remember"
                                 checked={rememberMe}
                                 onCheckedChange={setRememberMe}
+                                disabled={loading}
                             />
                             <label htmlFor="remember" className="text-xs text-[#D3CDC3]/70 cursor-pointer select-none">
                                 Ingat Saya
@@ -193,10 +224,12 @@ export default function Login() {
                     <div className="flex-1 h-[1px] bg-white/5"></div>
                 </div>
 
-                {/* GOOGLE */}
+                {/* GOOGLE BUTTON */}
                 <button
                     type="button"
-                    className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-xl hover:bg-white/10 text-white text-xs font-semibold uppercase tracking-wider transition"
+                    onClick={handleGoogleLogin}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-xl hover:bg-white/10 text-white text-xs font-semibold uppercase tracking-wider transition disabled:opacity-50"
                 >
                     <FcGoogle size={16} />
                     Masuk dengan Google

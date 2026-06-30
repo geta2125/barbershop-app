@@ -1,141 +1,139 @@
-import axios from "axios";
+import { supabase } from "../lib/supabaseClient";
+import { db } from "./localDB";
 
-const API_URL = "https://vmhtbwzpfwsutkjrhukw.supabase.co/rest/v1/users";
-
-const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtaHRid3pwZndzdXRranJodWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MDMwMTYsImV4cCI6MjA5Njk3OTAxNn0.kEOrXCFvu_SIqw978rhAKdJgS-wP5ZoIuqfrWBom858";
-
-const headers = {
-    apikey: API_KEY,
-    Authorization: `Bearer ${API_KEY}`,
-    "Content-Type": "application/json",
-    Accept: "application/json",
+const ROLE_MAP = {
+  Admin: "admin",
+  Owner: "owner",
+  Barber: "barber",
+  Member: "member",
+  Customer: "member",
+  Staff: "barber",
 };
 
+const LABEL_MAP = {
+  admin: "Admin",
+  owner: "Owner",
+  barber: "Barber",
+  member: "Member",
+};
+
+function normalizeRole(role = "member") {
+  return ROLE_MAP[role] || String(role).toLowerCase();
+}
+
+function mapUser(row = {}) {
+  return {
+    ...row,
+    id: row.id || row.ID_Customer,
+    nama: row.name || row.full_name || row.nama || "",
+    full_name: row.full_name || row.name || "",
+    role: LABEL_MAP[row.role] || row.role || "Member",
+    roleValue: row.role,
+    roleLabel: LABEL_MAP[row.role] || row.role || "Member",
+    status: row.status || "Aktif",
+  };
+}
+
+export async function getCurrentProfile() {
+  try {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) return null;
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", authData.user.id)
+      .single();
+
+    if (error) {
+      console.warn("Profile not found in Supabase public.users, using auth metadata instead.");
+      // Fallback to auth metadata if public.users is not populated
+      return mapUser({
+        id: authData.user.id,
+        email: authData.user.email,
+        name: authData.user.user_metadata?.full_name || "GroomGold User",
+        role: authData.user.user_metadata?.role || "member",
+        status: "Aktif"
+      });
+    }
+    return mapUser(data);
+  } catch (e) {
+    console.error("Error fetching current profile:", e);
+    return null;
+  }
+}
+
 export const usersAPI = {
+  async fetchUsers() {
+    try {
+      const list = db.getUsers();
+      return list.map(mapUser);
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
 
-    // ======================
-    // GET ALL USERS
-    // ======================
-    async fetchUsers() {
-        const response = await axios.get(
-            API_URL,
-            { headers }
-        );
+  async createUser(form) {
+    try {
+      const list = db.getUsers();
+      const newId = `user-${Date.now()}`;
+      const newUser = {
+        id: newId,
+        name: form.nama,
+        email: form.email,
+        role: normalizeRole(form.role),
+        status: form.status || "Aktif",
+        created_at: new Date().toISOString().slice(0, 10)
+      };
+      list.unshift(newUser);
+      db.saveUsers(list);
+      return mapUser(newUser);
+    } catch (e) {
+      throw e;
+    }
+  },
 
-        return response.data;
-    },
+  async updateUser(id, form) {
+    try {
+      const list = db.getUsers();
+      const idx = list.findIndex(u => String(u.id) === String(id));
+      if (idx === -1) throw new Error("User not found");
 
-    // ======================
-    // CREATE USER
-    // ======================
-    async createUser(data) {
+      const updated = {
+        ...list[idx],
+        name: form.nama || list[idx].name,
+        email: form.email || list[idx].email,
+        role: normalizeRole(form.role),
+        status: form.status || list[idx].status,
+      };
+      list[idx] = updated;
+      db.saveUsers(list);
+      return mapUser(updated);
+    } catch (e) {
+      throw e;
+    }
+  },
 
-        const response = await axios.post(
-            API_URL,
-            {
-                nama: data.nama,
-                email: data.email,
-                password: data.password,
-                role: data.role,
-                status: data.status,
-            },
-            {
-                headers: {
-                    ...headers,
-                    Prefer: "return=representation",
-                },
-            }
-        );
+  async deleteUser(id) {
+    try {
+      let list = db.getUsers();
+      list = list.filter(u => String(u.id) !== String(id));
+      db.saveUsers(list);
+    } catch (e) {
+      throw e;
+    }
+  },
 
-        return response.data;
-    },
+  async forgotPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (error) throw error;
+  },
 
-    // ======================
-    // REGISTER USER
-    // ======================
-    async register(data) {
-
-        const cekUser = await axios.get(
-            `${API_URL}?email=eq.${data.email}`,
-            { headers }
-        );
-
-        if (cekUser.data.length > 0) {
-            throw new Error("Email sudah terdaftar");
-        }
-
-        const response = await axios.post(
-            API_URL,
-            {
-                nama: data.nama,
-                email: data.email,
-                password: data.password,
-                role: data.role,
-                status: "Aktif",
-            },
-            {
-                headers: {
-                    ...headers,
-                    Prefer: "return=representation",
-                },
-            }
-        );
-
-        return response.data[0];
-    },
-
-    // ======================
-    // LOGIN
-    // ======================
-    async login(email, password) {
-
-        const response = await axios.get(
-            `${API_URL}?email=eq.${email}`,
-            { headers }
-        );
-
-        const user = response.data[0];
-
-        if (!user) {
-            throw new Error("Email tidak ditemukan");
-        }
-
-        if (user.password !== password) {
-            throw new Error("Password salah");
-        }
-
-        return user;
-    },
-
-    // ======================
-    // UPDATE USER
-    // ======================
-    async updateUser(id, data) {
-
-        const response = await axios.patch(
-            `${API_URL}?id=eq.${id}`,
-            data,
-            {
-                headers: {
-                    ...headers,
-                    Prefer: "return=representation",
-                },
-            }
-        );
-
-        return response.data;
-    },
-
-    // ======================
-    // DELETE USER
-    // ======================
-    async deleteUser(id) {
-
-        await axios.delete(
-            `${API_URL}?id=eq.${id}`,
-            { headers }
-        );
-
-        return true;
-    },
+  async logout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  },
 };

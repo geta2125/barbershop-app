@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { HiArrowLeft } from "react-icons/hi2";
-import { useState, useRef, useEffect } from "react"; // Perbaikan: Import hook React yang hilang
+import { useState, useRef, useEffect } from "react";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { BiError } from "react-icons/bi";
-import { HiOutlineEnvelopeOpen } from "react-icons/hi2"; // Tambahan icon untuk state sukses
+import { HiOutlineEnvelopeOpen } from "react-icons/hi2";
+import { authService } from "../../services/authService";
 
 export default function Forgot() {
     const emailRef = useRef(null);
@@ -25,11 +26,8 @@ export default function Forgot() {
             setLoading(true);
             setError("");
 
-            // Contoh simulasi hit API Reset Password kamu
-            // await usersAPI.forgotPassword(email);
-
-            // Simulasi delay jaringan (bisa dihapus jika API asli sudah dipasang)
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            const { error: resetError } = await authService.resetPassword(email);
+            if (resetError) throw resetError;
 
             setIsSuccess(true);
         } catch (err) {

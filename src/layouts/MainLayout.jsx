@@ -1,32 +1,53 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import Loading from "../components/Loading";
+import { supabase } from "../lib/supabaseClient";
 
 export default function MainLayout() {
     const navigate = useNavigate();
+    const [checkingSession, setCheckingSession] = useState(true);
+    const [hasSession, setHasSession] = useState(false);
     
     // Mendapatkan tahun saat ini secara dinamis
     const currentYear = new Date().getFullYear();
 
-    // Ambil token otentikasi dari localStorage langsung di top-level render
-    const token = localStorage.getItem("auth_token"); 
-
     // ==========================================
-    // SISTEM PENGAMAN ROUTE (ANTI TENDANG)
+    // SISTEM PENGAMAN ROUTE BERBASIS SUPABASE SESSION
     // ==========================================
     useEffect(() => {
-        // JIKA token tidak ada, BARU lempar paksa ke halaman login
-        if (!token) {
-            navigate("/login", { replace: true });
-        }
-    }, [token, navigate]);
+        let mounted = true;
+
+        supabase.auth.getSession().then(({ data }) => {
+            if (!mounted) return;
+            const active = Boolean(data.session);
+            setHasSession(active);
+            setCheckingSession(false);
+            if (!active) navigate("/login", { replace: true });
+        });
+
+        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+            const active = Boolean(session);
+            setHasSession(active);
+            setCheckingSession(false);
+            if (!active) navigate("/login", { replace: true });
+        });
+
+        return () => {
+            mounted = false;
+            listener.subscription.unsubscribe();
+        };
+    }, [navigate]);
 
     // ==========================================
     // GUARD CLAUSE (Mencegah Flicker / Bocor Komponen)
     // ==========================================
-    // Jika tidak ada token, jangan render layout apa pun di layar (kembalikan null)
-    if (!token) {
+    if (checkingSession) {
+        return <Loading />;
+    }
+
+    if (!hasSession) {
         return null; 
     }
 

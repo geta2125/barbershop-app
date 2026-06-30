@@ -6,13 +6,14 @@ export default function AuthLayout() {
         // Mengunci layout pas 1 layar penuh anti-meluap
         <div className="h-screen w-screen flex bg-[#0A0A0A] text-[#D3CDC3] font-sans antialiased overflow-hidden select-none">
 
-            {/* ── LEFT · FORM PANEL (Diubah menjadi lg:w-1/2 untuk porsi 50%) ── */}
+            {/* ── LEFT · FORM PANEL ── */}
             <div className="relative w-full lg:w-1/2 h-full flex flex-col bg-[#0D0C0B] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] z-10 shadow-[10px_0_40px_rgba(0,0,0,0.6)]">
 
                 {/* Gold accent line kiri */}
                 <div className="absolute left-0 top-0 h-full w-[2px] bg-gradient-to-b from-transparent via-[#A87C2D]/50 to-transparent pointer-events-none" />
 
-                <div className="flex flex-col justify-between min-h-full px-10 sm:px-16 py-12">
+                {/* Menambahkan max-w-xl mx-auto agar di layar tablet form tidak terlalu melar ke samping */}
+                <div className="flex flex-col justify-between min-h-full w-full max-w-xl mx-auto px-8 sm:px-16 py-12">
 
                     {/* LOGO */}
                     <div className="flex-shrink-0 flex flex-col items-center text-center">
@@ -33,8 +34,8 @@ export default function AuthLayout() {
                         </p>
                     </div>
 
-                    {/* FORM */}
-                    <div className="w-full max-w-sm mx-auto flex flex-col gap-5 my-auto py-10">
+                    {/* FORM CANVAS (Tempat Login / Register masuk) */}
+                    <div className="w-full max-w-sm mx-auto flex flex-col gap-5 my-auto py-8">
                         <Outlet />
                     </div>
 
@@ -45,7 +46,7 @@ export default function AuthLayout() {
                 </div>
             </div>
 
-            {/* ── RIGHT · HERO CANVAS (Diubah menjadi lg:w-1/2 untuk porsi 50% Full Screen) ── */}
+            {/* ── RIGHT · HERO CANVAS ── */}
             <div className="hidden lg:block w-1/2 h-full bg-[#080807] flex-shrink-0 subpixel-antialiased relative overflow-hidden">
 
                 {/* IMAGE — Mengisi 100% ruang kanan secara simetris */}
