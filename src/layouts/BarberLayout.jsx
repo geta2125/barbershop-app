@@ -1,23 +1,23 @@
 import { Outlet } from "react-router-dom";
 import BarberSidebar from "../components/sidebar/BarberSidebar";
-import Navbar from "../components/Navbar";
 import Header from "@/components/Header";
 
 export default function BarberLayout() {
     return (
-        <div className="flex min-h-screen bg-[#111111]">
+        <div className="bg-[#0d0d14] min-h-screen text-white">
 
+            {/* Sidebar */}
             <BarberSidebar />
 
-            <div className="flex-1 flex flex-col ml-[280px]">
+            {/* Header */}
+            <Header />
 
-                <Header />
-
-                <main className="flex-1 p-6 overflow-y-auto">
+            {/* Main Content */}
+            <main className="ml-[280px] mt-20 min-h-[calc(100vh-80px)] overflow-y-auto px-6 py-6 md:px-8 md:py-8">
+                <div className="max-w-[1600px] mx-auto w-full">
                     <Outlet />
-                </main>
-
-            </div>
+                </div>
+            </main>
 
         </div>
     );

@@ -27,52 +27,77 @@ export default function OwnerSidebar() {
         }
     `;
 
-    // MENU DATA (Disesuaikan dengan permintaan)
-    const menus = [
+    // MENU GROUPS (Disesuaikan dengan Owner)
+    const menuGroups = [
         {
-            key: "/owner/dashboard",
-            label: "Dashboard",
-            icon: <FaHome />
+            title: "UTAMA",
+            menus: [
+                {
+                    key: "/owner/dashboard",
+                    label: "Dashboard",
+                    icon: <FaHome />
+                }
+            ]
         },
         {
-            key: "/owner/customers",
-            label: "Customers",
-            icon: <FaUsers />
+            title: "CRM",
+            menus: [
+                {
+                    key: "/owner/customers",
+                    label: "Customers",
+                    icon: <FaUsers />
+                },
+                {
+                    key: "/owner/membership",
+                    label: "Membership",
+                    icon: <FaCrown />
+                },
+                {
+                    key: "/owner/feedback",
+                    label: "Feedback",
+                    icon: <FaCommentDots />
+                }
+            ]
         },
         {
-            key: "/owner/membership",
-            label: "Membership",
-            icon: <FaCrown />
+            title: "BOOKING",
+            menus: [
+                {
+                    key: "/owner/booking",
+                    label: "Booking",
+                    icon: <FaClipboardList />
+                },
+                {
+                    key: "/owner/services",
+                    label: "Services",
+                    icon: <FaCut />
+                },
+                {
+                    key: "/owner/barbers",
+                    label: "Barbers",
+                    icon: <FaUserTie />
+                }
+            ]
         },
         {
-            key: "/owner/feedback",
-            label: "Feedback",
-            icon: <FaCommentDots />
+            title: "REPORT",
+            menus: [
+                {
+                    key: "/owner/history",
+                    label: "History",
+                    icon: <FaHistory />
+                }
+            ]
         },
         {
-            key: "/owner/booking",
-            label: "Booking",
-            icon: <FaClipboardList />
-        },
-        {
-            key: "/owner/services",
-            label: "Services",
-            icon: <FaCut />
-        },
-        {
-            key: "/owner/barbers",
-            label: "Barbers",
-            icon: <FaUserTie />
-        },
-        {
-            key: "/owner/history",
-            label: "History",
-            icon: <FaHistory />
-        },
-        {
-            key: "/owner/settings",
-            label: "Settings",
-            icon: <FaCog />
+            title: "SYSTEM",
+            menus: [
+                {
+                    key: "/owner/settings",
+                    label: "Settings",
+                    icon: <FaCog />
+                }
+            ]
         }
     ];
 
@@ -97,41 +122,51 @@ export default function OwnerSidebar() {
                             Groom <span className="text-[#dfb34c]">Gold</span>
                         </h1>
                         <p className="text-[9px] tracking-[2px] uppercase text-gray-500 font-medium">
-                            Barbershop
+                            Owner Panel
                         </p>
                     </div>
                 </div>
 
                 {/* NAVIGATION MENUS */}
-                <div className="px-3">
-                    <ul className="space-y-1">
-                        {menus.map((item) => (
-                            <li key={item.key}>
-                                <NavLink to={item.key} className={menuClass}>
-                                    {({ isActive }) => (
-                                        <>
-                                            {/* ACTIVE BAR */}
-                                            {isActive && (
-                                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-[#dfb34c]" />
+                <div className="px-3 space-y-4">
+                    {menuGroups.map((group) => (
+                        <div key={group.title}>
+                            {/* GROUP TITLE */}
+                            <h4 className="px-4 mb-2 text-[10px] uppercase tracking-[3px] text-[#555566] font-bold">
+                                {group.title}
+                            </h4>
+
+                            {/* ITEMS LIST */}
+                            <ul className="space-y-1">
+                                {group.menus.map((item) => (
+                                    <li key={item.key}>
+                                        <NavLink to={item.key} className={menuClass}>
+                                            {({ isActive }) => (
+                                                <>
+                                                    {/* ACTIVE BAR */}
+                                                    {isActive && (
+                                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-[#dfb34c]" />
+                                                    )}
+
+                                                    {/* ICON */}
+                                                    <div className={`text-base transition-all duration-300 ${isActive ? "text-[#dfb34c]" : "text-[#8e8e9f] group-hover:text-white"
+                                                        }`}>
+                                                        {item.icon}
+                                                    </div>
+
+                                                    {/* LABEL */}
+                                                    <span className={`text-[13.5px] font-medium tracking-wide flex-1 ${isActive ? "text-white font-semibold" : "text-[#8e8e9f] group-hover:text-white"
+                                                        }`}>
+                                                        {item.label}
+                                                    </span>
+                                                </>
                                             )}
-
-                                            {/* ICON */}
-                                            <div className={`text-base transition-all duration-300 ${isActive ? "text-[#dfb34c]" : "text-[#8e8e9f] group-hover:text-white"
-                                                }`}>
-                                                {item.icon}
-                                            </div>
-
-                                            {/* LABEL */}
-                                            <span className={`text-[13.5px] font-medium tracking-wide flex-1 ${isActive ? "text-white font-semibold" : "text-[#8e8e9f] group-hover:text-white"
-                                                }`}>
-                                                {item.label}
-                                            </span>
-                                        </>
-                                    )}
-                                </NavLink>
-                            </li>
-                        ))}
-                    </ul>
+                                        </NavLink>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
                 </div>
             </div>
         </aside>

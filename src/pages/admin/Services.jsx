@@ -22,6 +22,9 @@ export default function Services() {
   const [image, setImage] = useState("haircut-classic.jpg");
   const [saving, setSaving] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
   const fetchServices = () => {
     setLoading(true);
     serviceService.getAll(true)
@@ -35,6 +38,10 @@ export default function Services() {
   useEffect(() => {
     fetchServices();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const handleCreateService = async (e) => {
     e.preventDefault();
@@ -84,6 +91,34 @@ export default function Services() {
     (s.kategori && s.kategori.toLowerCase().includes(search.toLowerCase()))
   );
 
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedServices = filtered.slice(startIndex, endIndex);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+      
+      if (start === 1) {
+        end = maxVisible;
+      } else if (end === totalPages) {
+        start = totalPages - maxVisible + 1;
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  };
+
   return (
     <div className="w-full min-h-screen bg-[#0A0A0A] text-[#E5E5E5] space-y-6">
       <Container>
@@ -121,49 +156,110 @@ export default function Services() {
         {filtered.length === 0 ? (
           <EmptyState title="Layanan tidak ditemukan" />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filtered.map((s) => (
-              <div 
-                key={s.id}
-                className="bg-[#141414] border border-white/5 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:border-[#dfb34c]/20"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-[#dfb34c]/10 text-[#dfb34c] border border-[#dfb34c]/20 uppercase">
-                      {s.kategori}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold border uppercase ${
-                      s.status === "Aktif" 
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
-                        : "bg-red-500/10 text-red-400 border-red-500/20"
-                    }`}>
-                      {s.status}
-                    </span>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {paginatedServices.map((s) => (
+                <div 
+                  key={s.id}
+                  className="bg-[#141414] border border-white/5 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 transition-all hover:border-[#dfb34c]/20"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    {/* Image / Photo */}
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/5 bg-[#1a1a1a] flex items-center justify-center">
+                      {s.gambar ? (
+                        <img 
+                          src={`/img/services/${s.gambar}`} 
+                          alt={s.nama_service} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/img/logopfl_geta.png"; // Fallback
+                          }}
+                        />
+                      ) : (
+                        <FaCut className="text-[#dfb34c] text-lg" />
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-[#dfb34c]/10 text-[#dfb34c] border border-[#dfb34c]/20 uppercase">
+                          {s.kategori}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold border uppercase ${
+                          s.status === "Aktif" 
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                            : "bg-red-500/10 text-red-400 border-red-500/20"
+                        }`}>
+                          {s.status}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-bold text-white leading-snug">{s.nama_service}</h3>
+                      
+                      <div className="flex items-center gap-4 text-[11px] text-[#8e8e9f]">
+                        <span className="flex items-center gap-1"><FaClock className="text-[#dfb34c]/60" /> {s.durasi} Menit</span>
+                        <span className="font-bold text-white">Rp {s.harga.toLocaleString("id-ID")}</span>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-base font-black text-white">{s.nama_service}</h3>
-                  
-                  <div className="flex items-center gap-4 text-xs text-[#8e8e9f]">
-                    <span className="flex items-center gap-1.5"><FaClock className="text-[#dfb34c]/60" /> {s.durasi} Menit</span>
-                    <span className="font-bold text-white">Rp {s.harga.toLocaleString("id-ID")}</span>
+
+                  <div className="flex gap-2 w-full sm:w-auto justify-end border-t border-white/5 pt-3 sm:border-none sm:pt-0 shrink-0">
+                    <Link
+                      to={`/admin/services/${s.id}`}
+                      className="p-2.5 bg-white/5 hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 hover:border-[#dfb34c]/20 rounded-xl inline-flex transition-all text-xs font-bold gap-1 items-center"
+                    >
+                      <FaEdit /> Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(s.id)}
+                      className="p-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-400 border border-red-500/10 hover:border-red-500/20 rounded-xl inline-flex transition-all text-xs font-bold gap-1 items-center"
+                    >
+                      <FaTimes /> Hapus
+                    </button>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                <div className="flex gap-2 w-full sm:w-auto justify-end border-t border-white/5 pt-3 sm:border-none sm:pt-0">
-                  <Link
-                    to={`/admin/services/${s.id}`}
-                    className="p-2.5 bg-white/5 hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 hover:border-[#dfb34c]/20 rounded-xl inline-flex transition-all text-xs font-bold gap-1 items-center"
-                  >
-                    <FaEdit /> Edit
-                  </Link>
+            {/* PAGINATION */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 bg-[#141414] border border-white/5 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                <p className="text-xs text-[#8e8e9f]">
+                  Menampilkan <span className="font-bold text-white">{startIndex + 1}</span> - <span className="font-bold text-white">{Math.min(endIndex, totalItems)}</span> dari <span className="font-bold text-white">{totalItems}</span> layanan
+                </p>
+                <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => handleDelete(s.id)}
-                    className="p-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-400 border border-red-500/10 hover:border-red-500/20 rounded-xl inline-flex transition-all text-xs font-bold gap-1 items-center"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
                   >
-                    <FaTimes /> Hapus
+                    Sebelumnya
+                  </button>
+                  
+                  {getPageNumbers().map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-9 h-9 border rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
+                        currentPage === page
+                          ? "bg-[#dfb34c] text-[#111116] border-[#dfb34c] font-black"
+                          : "bg-[#1a1a1a] text-white border-white/5 hover:bg-white/5"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                  >
+                    Selanjutnya
                   </button>
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </Container>

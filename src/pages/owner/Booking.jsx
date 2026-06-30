@@ -9,6 +9,9 @@ export default function OwnerBooking() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
   useEffect(() => {
     setLoading(true);
     try {
@@ -21,6 +24,10 @@ export default function OwnerBooking() {
     }
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
   const filtered = bookings.filter(b => {
     const matchesSearch = 
       b.nama_customer.toLowerCase().includes(search.toLowerCase()) ||
@@ -31,6 +38,34 @@ export default function OwnerBooking() {
 
     return matchesSearch && matchesStatus;
   });
+
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedBookings = filtered.slice(startIndex, endIndex);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+      
+      if (start === 1) {
+        end = maxVisible;
+      } else if (end === totalPages) {
+        start = totalPages - maxVisible + 1;
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  };
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -92,50 +127,92 @@ export default function OwnerBooking() {
           Tidak ada data booking yang cocok dengan filter.
         </div>
       ) : (
-        <div className="bg-[#141414] border border-white/5 rounded-3xl overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 bg-white/[0.02] text-[10px] uppercase tracking-wider text-[#dfb34c] font-black">
-                  <th className="px-6 py-4">ID Booking</th>
-                  <th className="px-6 py-4">Pelanggan</th>
-                  <th className="px-6 py-4">Layanan</th>
-                  <th className="px-6 py-4">Barber</th>
-                  <th className="px-6 py-4">Jadwal</th>
-                  <th className="px-6 py-4">Biaya</th>
-                  <th className="px-6 py-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.02] text-xs text-white/80">
-                {filtered.map((item) => (
-                  <tr key={item.id_booking} className="hover:bg-white/[0.01] transition-colors">
-                    <td className="px-6 py-4 font-mono font-bold text-[#dfb34c]">
-                      #BK-{(10000 + item.id_booking)}
-                    </td>
-                    <td className="px-6 py-4 font-medium text-white">
-                      <div>
-                        <p>{item.nama_customer}</p>
-                        <p className="text-[10px] text-[#8e8e9f] mt-0.5">{item.no_hp}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-[#8e8e9f]">{item.layanan}</td>
-                    <td className="px-6 py-4 text-[#8e8e9f] flex items-center gap-1.5 mt-2">
-                      <FaUserTie className="text-[#dfb34c]/60" /> {item.barber}
-                    </td>
-                    <td className="px-6 py-4 text-[#8e8e9f]">{item.jadwal ? item.jadwal.replace("T", " ") : "-"}</td>
-                    <td className="px-6 py-4 font-mono font-bold text-white">
-                      Rp {item.harga.toLocaleString("id-ID")}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border uppercase ${getStatusStyle(item.status_booking)}`}>
-                        {item.status_booking}
-                      </span>
-                    </td>
+        <div className="space-y-6">
+          <div className="bg-[#141414] border border-white/5 rounded-3xl overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/5 bg-white/[0.02] text-[10px] uppercase tracking-wider text-[#dfb34c] font-black">
+                    <th className="px-6 py-4">ID Booking</th>
+                    <th className="px-6 py-4">Pelanggan</th>
+                    <th className="px-6 py-4">Layanan</th>
+                    <th className="px-6 py-4">Barber</th>
+                    <th className="px-6 py-4">Jadwal</th>
+                    <th className="px-6 py-4">Biaya</th>
+                    <th className="px-6 py-4">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-white/[0.02] text-xs text-white/80">
+                  {paginatedBookings.map((item) => (
+                    <tr key={item.id_booking} className="hover:bg-white/[0.01] transition-colors">
+                      <td className="px-6 py-4 font-mono font-bold text-[#dfb34c]">
+                        #BK-{(10000 + item.id_booking)}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-white">
+                        <div>
+                          <p>{item.nama_customer}</p>
+                          <p className="text-[10px] text-[#8e8e9f] mt-0.5">{item.no_hp}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-[#8e8e9f]">{item.layanan}</td>
+                      <td className="px-6 py-4 text-[#8e8e9f] flex items-center gap-1.5 mt-2">
+                        <FaUserTie className="text-[#dfb34c]/60" /> {item.barber}
+                      </td>
+                      <td className="px-6 py-4 text-[#8e8e9f]">{item.jadwal ? item.jadwal.replace("T", " ") : "-"}</td>
+                      <td className="px-6 py-4 font-mono font-bold text-white">
+                        Rp {item.harga.toLocaleString("id-ID")}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border uppercase ${getStatusStyle(item.status_booking)}`}>
+                          {item.status_booking}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 bg-[#141414] border border-white/5 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+              <p className="text-xs text-[#8e8e9f]">
+                Menampilkan <span className="font-bold text-white">{startIndex + 1}</span> - <span className="font-bold text-white">{Math.min(endIndex, totalItems)}</span> dari <span className="font-bold text-white">{totalItems}</span> booking
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                >
+                  Sebelumnya
+                </button>
+
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 border rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
+                      currentPage === page
+                        ? "bg-[#dfb34c] text-[#111116] border-[#dfb34c] font-black"
+                        : "bg-[#1a1a1a] text-white border-white/5 hover:bg-white/5"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                >
+                  Selanjutnya
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

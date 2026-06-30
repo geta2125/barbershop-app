@@ -101,6 +101,9 @@ export default function Booking() {
     }
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
   const filtered = bookings.filter(b => {
     const matchesSearch = 
       (b.nama_customer && b.nama_customer.toLowerCase().includes(search.toLowerCase())) ||
@@ -111,6 +114,38 @@ export default function Booking() {
     
     return matchesSearch && matchesStatus;
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedBookings = filtered.slice(startIndex, endIndex);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+      
+      if (start === 1) {
+        end = maxVisible;
+      } else if (end === totalPages) {
+        start = totalPages - maxVisible + 1;
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  };
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -186,7 +221,7 @@ export default function Booking() {
           </div>
 
           <Table headers={["ID Booking", "Customer", "Layanan", "Barber", "Jadwal", "Biaya", "Status", "Aksi"]}>
-            {filtered.map((b) => (
+            {paginatedBookings.map((b) => (
               <tr key={b.id_booking} className="border-b border-white/[0.02] hover:bg-white/[0.01] transition-colors">
                 <td className="px-6 py-4 font-mono font-bold text-[#dfb34c]">
                   #BK-{(10000 + b.id_booking)}
@@ -236,6 +271,46 @@ export default function Booking() {
           </Table>
 
           {filtered.length === 0 && <EmptyState title="Booking tidak ditemukan" />}
+
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/[0.01]">
+              <p className="text-xs text-[#8e8e9f]">
+                Menampilkan <span className="font-bold text-white">{startIndex + 1}</span> - <span className="font-bold text-white">{Math.min(endIndex, totalItems)}</span> dari <span className="font-bold text-white">{totalItems}</span> booking
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                >
+                  Sebelumnya
+                </button>
+                
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 border rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
+                      currentPage === page
+                        ? "bg-[#dfb34c] text-[#111116] border-[#dfb34c] font-black"
+                        : "bg-[#1a1a1a] text-white border-white/5 hover:bg-white/5"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                >
+                  Selanjutnya
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </Container>
 

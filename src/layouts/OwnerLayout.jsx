@@ -5,19 +5,20 @@ import Header from "@/components/Header";
 
 export default function OwnerLayout() {
     return (
-        <div className="flex min-h-screen bg-[#111111]">
+        <div className="bg-[#0d0d14] min-h-screen text-white">
 
+            {/* Sidebar fixed di kiri */}
             <OwnerSidebar />
 
-            <div className="flex-1 flex flex-col ml-[280px]">
+            {/* Header fixed di atas, otomatis mulai dari left-[280px] */}
+            <Header />
 
-                <Header />
-
-                <main className="flex-1 p-6 overflow-y-auto">
+            {/* Main content, diberi ruang sesuai sidebar (280px) & header (80px) */}
+            <main className="ml-[280px] mt-20 min-h-[calc(100vh-80px)] overflow-y-auto px-6 py-6 md:px-8 md:py-8">
+                <div className="max-w-[1600px] mx-auto w-full">
                     <Outlet />
-                </main>
-
-            </div>
+                </div>
+            </main>
 
         </div>
     );
