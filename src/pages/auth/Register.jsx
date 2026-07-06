@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { FiEye, FiEyeOff, FiUser, FiMail, FiLock, FiShield, FiPhone } from "react-icons/fi";
 import { BiError } from "react-icons/bi";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FcGoogle } from "react-icons/fc";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -57,6 +59,23 @@ export default function Register() {
         } catch (err) {
             setError(err.message || "Terjadi kesalahan saat mendaftar.");
         } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        try {
+            setLoading(true);
+            setError("");
+            const { error: authError } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                    redirectTo: `${window.location.origin}/dashboard`,
+                },
+            });
+            if (authError) throw authError;
+        } catch (err) {
+            setError(err.message || "Gagal masuk dengan Google.");
             setLoading(false);
         }
     };
@@ -215,6 +234,23 @@ export default function Register() {
                     ) : (
                         "Daftar"
                     )}
+                </button>
+                {/* DIVIDER */}
+                <div className="flex items-center gap-3 text-[10px] font-bold tracking-widest text-gray-500/50 mt-4">
+                    <div className="flex-1 h-[1px] bg-white/5"></div>
+                    ATAU
+                    <div className="flex-1 h-[1px] bg-white/5"></div>
+                </div>
+
+                {/* GOOGLE BUTTON */}
+                <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-xl hover:bg-white/10 text-white text-xs font-semibold uppercase tracking-wider transition disabled:opacity-50 mt-4"
+                >
+                    <FcGoogle size={16} />
+                    Daftar dengan Google
                 </button>
 
                 {/* LOGIN LINK */}

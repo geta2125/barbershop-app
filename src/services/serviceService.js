@@ -1,4 +1,4 @@
-import { db } from "./localDB";
+import { supabase } from "../lib/supabaseClient";
 
 export function mapService(row = {}) {
   const image = row.image_url || row.gambar || "";
@@ -16,11 +16,13 @@ export function mapService(row = {}) {
 export const serviceService = {
   async getAll(includeInactive = false) {
     try {
-      let list = db.getServices();
+      let query = supabase.from("services").select("*").order("id", { ascending: true });
       if (!includeInactive) {
-        list = list.filter(s => s.status === "Aktif");
+        query = query.eq("status", "Aktif");
       }
-      return { data: list, error: null };
+      const { data, error } = await query;
+      if (error) throw error;
+      return { data: (data || []).map(mapService), error: null };
     } catch (err) {
       return { data: null, error: err };
     }
@@ -28,10 +30,9 @@ export const serviceService = {
 
   async getById(id) {
     try {
-      const list = db.getServices();
-      const row = list.find(s => String(s.id) === String(id));
-      if (!row) return { data: null, error: new Error("Service not found") };
-      return { data: row, error: null };
+      const { data, error } = await supabase.from("services").select("*").eq("id", id).single();
+      if (error) throw error;
+      return { data: mapService(data), error: null };
     } catch (err) {
       return { data: null, error: err };
     }
@@ -39,10 +40,8 @@ export const serviceService = {
 
   async create(data) {
     try {
-      const list = db.getServices();
-      const newId = list.length > 0 ? Math.max(...list.map(s => s.id || 0)) + 1 : 1;
       const newRow = {
-        id: newId,
+        name: data.nama_service || data.name || "",
         nama_service: data.nama_service || data.name || "",
         kategori: data.kategori || data.category || "Haircut",
         durasi: Number(data.durasi ?? data.duration ?? 30),
@@ -50,9 +49,9 @@ export const serviceService = {
         gambar: data.gambar || data.image_url || "haircut-classic.jpg",
         status: data.status || "Aktif",
       };
-      list.push(newRow);
-      db.saveServices(list);
-      return { data: newRow, error: null };
+      const { data: inserted, error } = await supabase.from("services").insert(newRow).select().single();
+      if (error) throw error;
+      return { data: mapService(inserted), error: null };
     } catch (err) {
       return { data: null, error: err };
     }
@@ -60,22 +59,21 @@ export const serviceService = {
 
   async update(id, data) {
     try {
-      const list = db.getServices();
-      const idx = list.findIndex(s => String(s.id) === String(id));
-      if (idx === -1) return { data: null, error: new Error("Service not found") };
-
-      const updated = {
-        ...list[idx],
-        nama_service: data.nama_service || data.name || list[idx].nama_service,
-        kategori: data.kategori || data.category || list[idx].kategori,
-        durasi: Number(data.durasi ?? data.duration ?? list[idx].durasi),
-        harga: Number(data.harga ?? data.price ?? list[idx].harga),
-        gambar: data.gambar || data.image_url || list[idx].gambar,
-        status: data.status || list[idx].status,
+      const updatedRow = {
+        name: data.nama_service || data.name,
+        nama_service: data.nama_service || data.name,
+        kategori: data.kategori || data.category,
+        durasi: Number(data.durasi ?? data.duration),
+        harga: Number(data.harga ?? data.price),
+        gambar: data.gambar || data.image_url,
+        status: data.status,
       };
-      list[idx] = updated;
-      db.saveServices(list);
-      return { data: updated, error: null };
+      // Hapus key yang undefined agar tidak menimpa dengan null
+      Object.keys(updatedRow).forEach(key => updatedRow[key] === undefined && delete updatedRow[key]);
+
+      const { data: updated, error } = await supabase.from("services").update(updatedRow).eq("id", id).select().single();
+      if (error) throw error;
+      return { data: mapService(updated), error: null };
     } catch (err) {
       return { data: null, error: err };
     }
@@ -83,12 +81,11 @@ export const serviceService = {
 
   async delete(id) {
     try {
-      let list = db.getServices();
-      list = list.filter(s => String(s.id) !== String(id));
-      db.saveServices(list);
+      const { error } = await supabase.from("services").delete().eq("id", id);
+      if (error) throw error;
       return { data: true, error: null };
     } catch (err) {
       return { data: null, error: err };
     }
-  },
+  }
 };

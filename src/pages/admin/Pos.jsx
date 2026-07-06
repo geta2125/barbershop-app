@@ -44,18 +44,31 @@ export default function Pos() {
     const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
-        // Load collections
-        const allServices = db.getServices().filter(s => s.status === "Aktif");
-        const allCustomers = db.getCustomers().filter(c => c.Status_Aktif === "Aktif");
-        const allBarbers = db.getBarbers().filter(b => b.status !== "Nonaktif" && b.status !== false && b.status !== "false");
+        async function loadData() {
+            try {
+                // Load services asynchronously
+                const { serviceService } = await import("../../services/serviceService.js");
+                const { customerService } = await import("../../services/customerService.js");
+                const { barberService } = await import("../../services/barberService.js");
+                
+                const sData = await serviceService.getAll();
+                const cData = await customerService.getAll();
+                const bData = await barberService.getAll();
 
-        setServices(allServices);
-        setCustomers(allCustomers);
-        setBarbers(allBarbers);
-
-        if (allBarbers.length > 0) {
-            setSelectedBarber(allBarbers[0].name);
+                if (sData.data) setServices(sData.data.filter(s => s.status === "Aktif"));
+                if (cData.data) setCustomers(cData.data.filter(c => c.Status_Aktif === "Aktif"));
+                if (bData.data) {
+                    const activeBarbers = bData.data.filter(b => b.status !== "Nonaktif" && b.status !== false && b.status !== "false");
+                    setBarbers(activeBarbers);
+                    if (activeBarbers.length > 0) {
+                        setSelectedBarber(activeBarbers[0].name);
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal memuat data Pos:", err);
+            }
         }
+        loadData();
     }, []);
 
     // Manage point calculations for selected customer
@@ -98,7 +111,7 @@ export default function Pos() {
     const discount = usePoints ? Math.min(customerPoints * 100, subtotal) : 0;
     const total = subtotal - discount;
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         if (cart.length === 0) return;
         if (!selectedCustomer) {
             alert("Silakan pilih Pelanggan terlebih dahulu.");
@@ -126,20 +139,13 @@ export default function Pos() {
         bookings.unshift(newBooking);
         db.saveBookings(bookings);
 
-        // 2. Update Customer Spend & visits in Customers table
-        const allCustomers = db.getCustomers();
-        const updatedCustomers = allCustomers.map(c => {
-            if (String(c.ID_Customer) === String(selectedCustomer.ID_Customer)) {
-                return {
-                    ...c,
-                    Total_Transaksi: (c.Total_Transaksi || 0) + 1,
-                    Total_Pengeluaran: (c.Total_Pengeluaran || 0) + total,
-                    Transaksi_Terakhir: dateStr.replace("T", " ").substring(0, 19)
-                };
-            }
-            return c;
+        // 2. Update Customer Spend & visits in Customers table via Supabase
+        const { customerService } = await import("../../services/customerService.js");
+        await customerService.update(selectedCustomer.id, {
+            Total_Transaksi: (selectedCustomer.Total_Transaksi || 0) + 1,
+            Total_Pengeluaran: (selectedCustomer.Total_Pengeluaran || 0) + total,
+            Transaksi_Terakhir: dateStr.replace("T", " ").substring(0, 19)
         });
-        db.saveCustomers(updatedCustomers);
 
         // Set invoice modal data
         setReceiptData({

@@ -23,8 +23,22 @@ export default function MemberBooking() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    setServices(db.getServices().filter(s => s.status === "Aktif"));
-    setBarbers(db.getBarbers().filter(b => b.status !== "Nonaktif" && b.status !== false && b.status !== "false"));
+    async function loadFormOptions() {
+      try {
+        const { serviceService } = await import("../../services/serviceService.js");
+        const { barberService } = await import("../../services/barberService.js");
+        
+        const sData = await serviceService.getAll();
+        const bData = await barberService.getAll();
+        
+        if (sData.data) setServices(sData.data.filter(s => s.status === "Aktif"));
+        if (bData.data) setBarbers(bData.data.filter(b => b.status !== "Nonaktif" && b.status !== false && b.status !== "false"));
+      } catch (err) {
+        console.error("Gagal load options:", err);
+      }
+    }
+    
+    loadFormOptions();
     
     // Default date is today
     const today = new Date().toISOString().split("T")[0];

@@ -60,13 +60,16 @@ export default function BarberProfile() {
         console.warn("Table public.users update failed or table doesn't exist. Syncing locally.");
       }
 
-      // 3. Update in local storage barbers list
-      const barbers = db.getBarbers();
+      // 3. Update in Supabase barbers table
+      const { barberService } = await import("../../services/barberService.js");
+      const { data: bData } = await barberService.getAll();
+      const barbers = bData || [];
       const bIdx = barbers.findIndex(b => b.name.toLowerCase() === (profile?.name || "").toLowerCase());
       if (bIdx !== -1) {
-        barbers[bIdx].name = fullName;
-        barbers[bIdx].phone = phone;
-        db.saveBarbers(barbers);
+        await barberService.update(barbers[bIdx].id, {
+          name: fullName,
+          phone: phone
+        });
       }
 
       // 4. Update in local storage users list

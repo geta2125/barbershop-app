@@ -21,7 +21,7 @@ export default function MemberFeedback() {
   const [reviewText, setReviewText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchFeedbacks = () => {
+  const fetchFeedbacks = async () => {
     if (!profile) return;
     setLoading(true);
     try {
@@ -33,8 +33,11 @@ export default function MemberFeedback() {
       );
       setFeedbacks(filtered);
 
-      // Load barbers for dropdown, but only those from Completed bookings
-      const allBarbers = db.getBarbers() || [];
+      // Load barbers for dropdown asynchronously from Supabase
+      const { barberService } = await import("../../services/barberService.js");
+      const { data: allBarbers } = await barberService.getAll();
+      const bList = allBarbers || [];
+      
       const userBookings = db.getBookings().filter(b => 
         (profile.email && b.email === profile.email) || 
         (profile.phone && b.no_hp === profile.phone) ||
@@ -47,7 +50,7 @@ export default function MemberFeedback() {
           .map(b => b.barber)
       );
       
-      const allowedBarbers = allBarbers.filter(b => completedBarberNames.has(b.name));
+      const allowedBarbers = bList.filter(b => completedBarberNames.has(b.name));
       setBarbersList(allowedBarbers);
     } catch (e) {
       console.error("Error loading feedbacks:", e);

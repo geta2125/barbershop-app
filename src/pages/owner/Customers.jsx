@@ -12,15 +12,19 @@ export default function OwnerCustomers() {
   const itemsPerPage = 6;
 
   useEffect(() => {
-    setLoading(true);
-    try {
-      const data = db.getCustomers().map(mapCustomer);
-      setCustomers(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
+    async function loadData() {
+      setLoading(true);
+      try {
+        const { customerService } = await import("../../services/customerService.js");
+        const { data } = await customerService.getAll();
+        setCustomers(data || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     }
+    loadData();
   }, []);
 
   useEffect(() => {

@@ -47,26 +47,19 @@ export default function Customers() {
     e.preventDefault();
     setSaving(true);
     try {
-      const list = db.getCustomers();
-      const newId = list.length > 0 ? Math.max(...list.map(c => c.ID_Customer || 0)) + 1 : 1;
-      
-      const newRow = {
-        ID_Customer: newId,
-        id: newId,
+      const { data, error } = await customerService.create({
+        name: name,
         Nama_Lengkap: name,
+        email: email,
         Email: email,
+        phone: phone,
         No_HP: phone,
         Jenis_Kelamin: gender,
-        Tanggal_Daftar: new Date().toISOString().split("T")[0] + " 00:00:00",
-        Status_Member: "Member",
         Level_Membership: tier,
         Status_Aktif: "Aktif",
-        Total_Transaksi: 0,
-        Total_Pengeluaran: 0
-      };
+      });
 
-      list.unshift(newRow);
-      db.saveCustomers(list);
+      if (error) throw error;
       
       // Also add to memberships list
       const memberships = db.getMemberships();

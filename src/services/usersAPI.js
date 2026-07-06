@@ -1,4 +1,5 @@
-import { supabase } from "../lib/supabaseClient";
+import { createClient } from "@supabase/supabase-js";
+import { supabase, supabaseUrl, supabaseAnonKey } from "../lib/supabaseClient";
 import { db } from "./localDB";
 
 const ROLE_MAP = {
@@ -85,20 +86,44 @@ export const usersAPI = {
 
   async createUser(form) {
     try {
+      const tempClient = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: { persistSession: false, autoRefreshToken: false }
+      });
+      
+      const { data: authData, error: authError } = await tempClient.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          data: {
+            full_name: form.nama,
+            role: normalizeRole(form.role)
+          }
+        }
+      });
+      if (authError) throw authError;
+
+      const userId = authData.user?.id;
+      if (!userId) throw new Error("Gagal mendapatkan ID User dari Supabase Auth.");
+
       const newUser = {
+        id: userId,
         name: form.nama,
         full_name: form.nama,
         email: form.email,
         role: normalizeRole(form.role),
         status: form.status || "Aktif",
       };
+      
       const { data, error } = await supabase
         .from("users")
-        .insert([newUser])
+        .upsert([newUser])
         .select()
         .single();
-      if (error) throw error;
-      return mapUser(data);
+        
+      if (error) {
+        console.warn("Could not upsert into public.users, relying on auth trigger or fallback:", error);
+      }
+      return mapUser(data || newUser);
     } catch (e) {
       console.warn("Supabase create user failed, using local DB fallback:", e);
       const list = db.getUsers();

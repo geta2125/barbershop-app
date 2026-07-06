@@ -12,15 +12,19 @@ export default function OwnerServices() {
   const itemsPerPage = 8;
 
   useEffect(() => {
-    setLoading(true);
-    try {
-      const data = db.getServices().map(mapService);
-      setServices(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
+    async function loadData() {
+      setLoading(true);
+      try {
+        const { serviceService } = await import("../../services/serviceService.js");
+        const { data } = await serviceService.getAll(true); // owner sees all
+        setServices(data || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     }
+    loadData();
   }, []);
 
   useEffect(() => {

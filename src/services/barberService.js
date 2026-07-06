@@ -1,6 +1,12 @@
-import { db } from "./localDB";
+import { supabase } from "../lib/supabaseClient";
 
 export function mapBarber(row = {}) {
+  // Supabase stores status as boolean
+  let statusText = row.status;
+  if (typeof row.status === "boolean") {
+    statusText = row.status ? "Standby" : "Off Duty";
+  }
+
   return {
     ...row,
     id: row.id,
@@ -9,7 +15,7 @@ export function mapBarber(row = {}) {
     barber_name: row.name || row.barber_name || "",
     spesialis: row.specialty || row.specialization || row.spesialis || "All Styles",
     no_hp: row.phone || row.phone_number || row.no_hp || "",
-    status: row.status || "Standby",
+    status: statusText, // Keep it as string for UI compatibility
     rating: Number(row.rating || 4.8),
     experience: row.experience || "3 Years",
     image: row.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80"
@@ -19,8 +25,9 @@ export function mapBarber(row = {}) {
 export const barberService = {
   async getAll() {
     try {
-      const list = db.getBarbers();
-      return { data: list, error: null };
+      const { data, error } = await supabase.from("barbers").select("*").order("id", { ascending: true });
+      if (error) throw error;
+      return { data: (data || []).map(mapBarber), error: null };
     } catch (err) {
       return { data: null, error: err };
     }
@@ -28,10 +35,9 @@ export const barberService = {
 
   async getById(id) {
     try {
-      const list = db.getBarbers();
-      const row = list.find(b => String(b.id) === String(id));
-      if (!row) return { data: null, error: new Error("Barber not found") };
-      return { data: row, error: null };
+      const { data, error } = await supabase.from("barbers").select("*").eq("id", id).single();
+      if (error) throw error;
+      return { data: mapBarber(data), error: null };
     } catch (err) {
       return { data: null, error: err };
     }
@@ -39,21 +45,24 @@ export const barberService = {
 
   async create(data) {
     try {
-      const list = db.getBarbers();
-      const newId = list.length > 0 ? Math.max(...list.map(b => b.id || 0)) + 1 : 1;
+      // Determine boolean status for Supabase
+      let boolStatus = true;
+      if (typeof data.status === "boolean") boolStatus = data.status;
+      else if (typeof data.status === "string") {
+        boolStatus = ["aktif", "standby", "true"].includes(data.status.toLowerCase());
+      }
+
       const newRow = {
-        id: newId,
         name: data.name || data.nama_barber || "New Barber",
-        specialty: data.specialty || data.spesialis || "All Styles",
-        phone: data.phone || data.no_hp || "",
-        status: data.status !== undefined ? (typeof data.status === "boolean" ? (data.status ? "Aktif" : "Nonaktif") : data.status) : "Standby",
         rating: Number(data.rating || 4.8),
         experience: data.experience || "1 Year",
-        image: data.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80"
+        image: data.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+        status: boolStatus
       };
-      list.push(newRow);
-      db.saveBarbers(list);
-      return { data: newRow, error: null };
+      
+      const { data: inserted, error } = await supabase.from("barbers").insert(newRow).select().single();
+      if (error) throw error;
+      return { data: mapBarber(inserted), error: null };
     } catch (err) {
       return { data: null, error: err };
     }
@@ -61,23 +70,27 @@ export const barberService = {
 
   async update(id, data) {
     try {
-      const list = db.getBarbers();
-      const idx = list.findIndex(b => String(b.id) === String(id));
-      if (idx === -1) return { data: null, error: new Error("Barber not found") };
-
-      const updated = {
-        ...list[idx],
-        name: data.name || data.nama_barber || list[idx].name,
-        specialty: data.specialty || data.spesialis || list[idx].specialty,
-        phone: data.phone || data.no_hp || list[idx].phone,
-        status: data.status !== undefined ? (typeof data.status === "boolean" ? (data.status ? "Aktif" : "Nonaktif") : data.status) : list[idx].status,
-        rating: Number(data.rating || list[idx].rating),
-        experience: data.experience || list[idx].experience,
-        image: data.image || list[idx].image,
+      const updatedRow = {
+        name: data.name || data.nama_barber,
+        rating: data.rating ? Number(data.rating) : undefined,
+        experience: data.experience,
+        image: data.image
       };
-      list[idx] = updated;
-      db.saveBarbers(list);
-      return { data: updated, error: null };
+      
+      if (data.status !== undefined) {
+        if (typeof data.status === "boolean") {
+          updatedRow.status = data.status;
+        } else if (typeof data.status === "string") {
+          updatedRow.status = ["aktif", "standby", "true"].includes(data.status.toLowerCase());
+        }
+      }
+
+      // Hapus undefined keys
+      Object.keys(updatedRow).forEach(key => updatedRow[key] === undefined && delete updatedRow[key]);
+
+      const { data: updated, error } = await supabase.from("barbers").update(updatedRow).eq("id", id).select().single();
+      if (error) throw error;
+      return { data: mapBarber(updated), error: null };
     } catch (err) {
       return { data: null, error: err };
     }
@@ -85,9 +98,8 @@ export const barberService = {
 
   async delete(id) {
     try {
-      let list = db.getBarbers();
-      list = list.filter(b => String(b.id) !== String(id));
-      db.saveBarbers(list);
+      const { error } = await supabase.from("barbers").delete().eq("id", id);
+      if (error) throw error;
       return { data: true, error: null };
     } catch (err) {
       return { data: null, error: err };

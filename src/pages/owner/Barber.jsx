@@ -12,15 +12,19 @@ export default function OwnerBarber() {
   const itemsPerPage = 6; // grids of 3 columns render nicely with multiples of 3, e.g. 6 items
 
   useEffect(() => {
-    setLoading(true);
-    try {
-      const data = db.getBarbers().map(mapBarber);
-      setBarbers(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
+    async function loadData() {
+      setLoading(true);
+      try {
+        const { barberService } = await import("../../services/barberService.js");
+        const { data } = await barberService.getAll();
+        setBarbers(data || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     }
+    loadData();
   }, []);
 
   useEffect(() => {

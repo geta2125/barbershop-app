@@ -69,24 +69,19 @@ export default function Membership() {
       list.unshift(newRow);
       db.saveMemberships(list);
       
-      // Also check if customer exists, otherwise create customer record
-      const customers = db.getCustomers();
-      if (!customers.some(c => c.Email === email || c.No_HP === phone)) {
-        const newCustId = customers.length > 0 ? Math.max(...customers.map(c => c.ID_Customer || 0)) + 1 : 1;
-        customers.unshift({
-          ID_Customer: newCustId,
+      // Also check if customer exists via Supabase
+      const { customerService } = await import("../../services/customerService.js");
+      const { data: customers } = await customerService.getAll();
+      const cList = customers || [];
+      if (!cList.some(c => c.Email === email || c.No_HP === phone)) {
+        await customerService.create({
           Nama_Lengkap: name,
           Email: email,
           No_HP: phone,
           Jenis_Kelamin: "Laki-laki",
-          Tanggal_Daftar: new Date().toISOString().split("T")[0] + " 00:00:00",
-          Status_Member: "Member",
           Level_Membership: level,
           Status_Aktif: "Aktif",
-          Total_Transaksi: 1,
-          Total_Pengeluaran: newRow.Total_Pengeluaran
         });
-        db.saveCustomers(customers);
       }
 
       setName("");
