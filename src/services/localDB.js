@@ -20,7 +20,7 @@ const initLocalStorage = (key, defaultData) => {
 
 // Initial static list of Barbers since there is no databarber.json
 const initialBarbers = [
-  { "id": 1, "name": "Andi", "status": "Standby", "rating": 4.9, "experience": "5 Years", "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80" },
+  { "id": 1, "name": "Andi", "status": "Standby", "rating": 4.9, "experience": "5 Years", "image": "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=256&q=80" },
   { "id": 2, "name": "Budi", "status": "Standby", "rating": 4.8, "experience": "3 Years", "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80" },
   { "id": 3, "name": "Candra", "status": "Off Duty", "rating": 4.7, "experience": "4 Years", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80" },
   { "id": 4, "name": "Dedi", "status": "Standby", "rating": 4.6, "experience": "2 Years", "image": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80" },

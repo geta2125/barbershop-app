@@ -43,7 +43,7 @@ export default function Booking() {
   useEffect(() => {
     fetchBookings();
     setServices(db.getServices().filter(s => s.status === "Aktif"));
-    setBarbers(db.getBarbers().filter(b => b.status === "Standby" || b.status === "Aktif"));
+    setBarbers(db.getBarbers().filter(b => b.status !== "Nonaktif" && b.status !== false && b.status !== "false"));
     
     const today = new Date().toISOString().split("T")[0];
     setBookingDate(today);

@@ -46,7 +46,7 @@ export const barberService = {
         name: data.name || data.nama_barber || "New Barber",
         specialty: data.specialty || data.spesialis || "All Styles",
         phone: data.phone || data.no_hp || "",
-        status: data.status || "Standby",
+        status: data.status !== undefined ? (typeof data.status === "boolean" ? (data.status ? "Aktif" : "Nonaktif") : data.status) : "Standby",
         rating: Number(data.rating || 4.8),
         experience: data.experience || "1 Year",
         image: data.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80"
@@ -70,7 +70,7 @@ export const barberService = {
         name: data.name || data.nama_barber || list[idx].name,
         specialty: data.specialty || data.spesialis || list[idx].specialty,
         phone: data.phone || data.no_hp || list[idx].phone,
-        status: data.status || list[idx].status,
+        status: data.status !== undefined ? (typeof data.status === "boolean" ? (data.status ? "Aktif" : "Nonaktif") : data.status) : list[idx].status,
         rating: Number(data.rating || list[idx].rating),
         experience: data.experience || list[idx].experience,
         image: data.image || list[idx].image,

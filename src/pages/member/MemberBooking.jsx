@@ -24,7 +24,7 @@ export default function MemberBooking() {
 
   useEffect(() => {
     setServices(db.getServices().filter(s => s.status === "Aktif"));
-    setBarbers(db.getBarbers().filter(b => b.status === "Standby" || b.status === "Aktif"));
+    setBarbers(db.getBarbers().filter(b => b.status !== "Nonaktif" && b.status !== false && b.status !== "false"));
     
     // Default date is today
     const today = new Date().toISOString().split("T")[0];

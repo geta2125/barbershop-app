@@ -33,9 +33,22 @@ export default function MemberFeedback() {
       );
       setFeedbacks(filtered);
 
-      // Load barbers for dropdown
-      const barbers = db.getBarbers() || [];
-      setBarbersList(barbers);
+      // Load barbers for dropdown, but only those from Completed bookings
+      const allBarbers = db.getBarbers() || [];
+      const userBookings = db.getBookings().filter(b => 
+        (profile.email && b.email === profile.email) || 
+        (profile.phone && b.no_hp === profile.phone) ||
+        (b.nama_customer === profile.full_name || b.nama_customer === profile.name)
+      );
+      
+      const completedBarberNames = new Set(
+        userBookings
+          .filter(b => b.status_booking === "Completed")
+          .map(b => b.barber)
+      );
+      
+      const allowedBarbers = allBarbers.filter(b => completedBarberNames.has(b.name));
+      setBarbersList(allowedBarbers);
     } catch (e) {
       console.error("Error loading feedbacks:", e);
     } finally {

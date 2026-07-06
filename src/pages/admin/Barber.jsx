@@ -21,7 +21,7 @@ export default function Barber() {
         experience_year: 0,
         phone: "",
         rating: 0,
-        status: true,
+        status: "Aktif",
     });
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -50,7 +50,7 @@ export default function Barber() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         await dataAPI.saveBarber(form);
-        setForm({ name: "", specialty: "", experience_year: 0, phone: "", rating: 0, status: true });
+        setForm({ name: "", specialty: "", experience_year: 0, phone: "", rating: 0, status: "Aktif" });
         setShowForm(false);
         await loadBarbers();
     };
@@ -117,9 +117,11 @@ export default function Barber() {
                         <input className={inputCls} type="number" placeholder="Experience year" value={form.experience_year} onChange={(e) => setForm({ ...form, experience_year: e.target.value })} />
                         <input className={inputCls} placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                         <input className={inputCls} type="number" min="0" max="5" step="0.1" placeholder="Rating" value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })} />
-                        <select className={inputCls} value={String(form.status)} onChange={(e) => setForm({ ...form, status: e.target.value === "true" })}>
-                            <option value="true">Aktif</option>
-                            <option value="false">Nonaktif</option>
+                        <select className={inputCls} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                            <option value="Aktif">Aktif</option>
+                            <option value="Nonaktif">Nonaktif</option>
+                            <option value="Standby">Standby</option>
+                            <option value="Off Duty">Off Duty</option>
                         </select>
                         <button type="button" onClick={() => setShowForm(false)} className="py-2.5 rounded-xl bg-white/5 border border-white/8 text-white/50">Batal</button>
                         <button type="submit" className="py-2.5 rounded-xl bg-[#A87C2D] text-white font-semibold">Simpan Barber</button>
@@ -135,7 +137,7 @@ export default function Barber() {
                                 <td className="px-5 py-4">{barber.experience_year} tahun</td>
                                 <td className="px-5 py-4">{barber.phone || "-"}</td>
                                 <td className="px-5 py-4">{barber.rating}</td>
-                                <td className="px-5 py-4">{barber.status ? "Aktif" : "Nonaktif"}</td>
+                                <td className="px-5 py-4">{barber.status === "Aktif" || barber.status === "Standby" || barber.status === true ? "Aktif" : "Nonaktif"}</td>
                                 <td className="px-5 py-4 text-right">
                                     <button onClick={async () => { await dataAPI.deleteBarber(barber.id); await loadBarbers(); }} className="text-red-400">
                                         <FaTrash />

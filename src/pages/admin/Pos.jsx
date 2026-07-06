@@ -47,7 +47,7 @@ export default function Pos() {
         // Load collections
         const allServices = db.getServices().filter(s => s.status === "Aktif");
         const allCustomers = db.getCustomers().filter(c => c.Status_Aktif === "Aktif");
-        const allBarbers = db.getBarbers().filter(b => b.status === "Standby" || b.status === "Aktif");
+        const allBarbers = db.getBarbers().filter(b => b.status !== "Nonaktif" && b.status !== false && b.status !== "false");
 
         setServices(allServices);
         setCustomers(allCustomers);
