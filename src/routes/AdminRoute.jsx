@@ -11,7 +11,8 @@ export default function AdminRoute() {
         return <Navigate to="/login" replace />;
     }
 
-    if (profile?.role !== "admin") {
+    const r = String(profile?.role || "").toLowerCase();
+    if (r !== "admin" && r !== "kasir" && r !== "cashier") {
         return <Navigate to="/" replace />;
     }
 

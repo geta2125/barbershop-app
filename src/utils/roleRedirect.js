@@ -1,6 +1,8 @@
 export const roleRedirect = (role) => {
     switch (role) {
         case "admin":
+        case "kasir":
+        case "cashier":
             return "/admin/dashboard";
 
         case "owner":
@@ -10,6 +12,7 @@ export const roleRedirect = (role) => {
             return "/barber/dashboard";
 
         case "member":
+        case "customer":
             return "/member/dashboard";
 
         default:

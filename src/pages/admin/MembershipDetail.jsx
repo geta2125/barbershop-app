@@ -32,6 +32,29 @@ export default function MembershipDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const handleClaimReward = (redeemedId) => {
+    const confirmClaim = window.confirm("Apakah Anda yakin ingin memproses klaim voucher/reward ini?");
+    if (!confirmClaim) return;
+
+    try {
+      const allRedeemed = db.getRedeemedRewards();
+      const idx = allRedeemed.findIndex(r => String(r.id) === String(redeemedId));
+      if (idx !== -1) {
+        allRedeemed[idx].status = "Claimed";
+        db.saveRedeemedRewards(allRedeemed);
+        
+        // Refresh local state list
+        const rList = db.getRedeemedRewards().filter(r => r.customer_name === member.Nama_Lengkap);
+        setRedeemedList(rList);
+        
+        alert("Voucher berhasil diklaim!");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Gagal memproses klaim.");
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-12 text-[#dfb34c]">Memuat detail membership...</div>;
   }
@@ -193,13 +216,18 @@ export default function MembershipDetail() {
                     <p className="text-[10px] text-[#8e8e9f] mt-0.5">Ditebus pada: {item.date} | -{item.points_spent} Poin</p>
                   </div>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase ${
-                  item.status === "Claimed"
-                    ? "bg-[#1f1f2e] text-[#555566] border border-white/5"
-                    : "bg-[#dfb34c]/15 text-[#dfb34c] border border-[#dfb34c]/20"
-                }`}>
-                  {item.status === "Claimed" ? "Sudah Klaim" : "Siap Klaim"}
-                </span>
+                {item.status === "Claimed" ? (
+                  <span className="px-2.5 py-1 bg-[#1f1f2e] text-[#555566] border border-white/5 rounded-full text-[9px] font-extrabold uppercase">
+                    Sudah Klaim
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handleClaimReward(item.id)}
+                    className="px-3 py-1.5 bg-[#dfb34c] hover:bg-[#BE9359] text-[#111116] rounded-xl text-[9px] font-black uppercase transition-all shadow-[0_4px_10px_rgba(223,179,76,0.15)] animate-pulse"
+                  >
+                    KLAIM VOUCHER
+                  </button>
+                )}
               </div>
             ))}
           </div>

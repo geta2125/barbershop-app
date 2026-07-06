@@ -29,6 +29,7 @@ const TransactionDetail = React.lazy(() => import("./pages/admin/TransactionDeta
 const Settings = React.lazy(() => import("./pages/admin/Settings"));
 const Logout = React.lazy(() => import("./pages/admin/Logout"));
 const Users = React.lazy(() => import("./pages/admin/Users"));
+const Pos = React.lazy(() => import("./pages/admin/Pos"));
 
 const OwnerDashboard = React.lazy(() => import("./pages/owner/OwnerDashboard"));
 const OwnerBooking = React.lazy(() => import("./pages/owner/Booking"));
@@ -87,6 +88,7 @@ function AdminPages() {
       <Route path="settings" element={<Settings />} />
       <Route path="logout" element={<Logout />} />
       <Route path="users" element={<Users />} />
+      <Route path="pos" element={<Pos />} />
     </>
   );
 }

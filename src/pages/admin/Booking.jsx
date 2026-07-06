@@ -43,7 +43,7 @@ export default function Booking() {
   useEffect(() => {
     fetchBookings();
     setServices(db.getServices().filter(s => s.status === "Aktif"));
-    setBarbers(db.getBarbers().filter(b => b.status === "Standby"));
+    setBarbers(db.getBarbers().filter(b => b.status === "Standby" || b.status === "Aktif"));
     
     const today = new Date().toISOString().split("T")[0];
     setBookingDate(today);
@@ -164,7 +164,7 @@ export default function Booking() {
   return (
     <div className="w-full min-h-screen bg-[#0A0A0A] text-[#E5E5E5] space-y-6">
       <Container>
-        <PageHeader title="Reservations" breadcrumb={["Dashboard", "Booking"]}>
+        <PageHeader title="Booking" breadcrumb={["Dashboard", "Booking"]}>
           <div className="flex items-center gap-2 bg-[#141414] border border-white/5 px-4 py-2 rounded-xl text-xs text-white/40">
             <FaCalendarAlt className="text-[#dfb34c]" />
             <span className="text-[#dfb34c] font-bold">Booking Monitor</span>

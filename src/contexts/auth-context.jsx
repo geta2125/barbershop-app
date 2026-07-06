@@ -92,6 +92,7 @@ export function AuthProvider({ children }) {
         email,
         password,
         phone,
+        role = "member",
     ) => {
         return await supabase.auth.signUp({
             email,
@@ -100,7 +101,7 @@ export function AuthProvider({ children }) {
                 data: {
                     full_name,
                     phone,
-                    role: "member",
+                    role: role,
                 },
             },
         });

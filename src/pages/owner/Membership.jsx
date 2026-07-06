@@ -8,6 +8,9 @@ export default function OwnerMembership() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
   const fetchMemberships = () => {
     setLoading(true);
     try {
@@ -23,6 +26,10 @@ export default function OwnerMembership() {
   useEffect(() => {
     fetchMemberships();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const handleApprove = async (id) => {
     const confirmApprove = window.confirm("Setujui keanggotaan/upgrade membership ini?");
@@ -43,6 +50,34 @@ export default function OwnerMembership() {
     m.Email.toLowerCase().includes(search.toLowerCase()) ||
     m.Level_Membership.toLowerCase().includes(search.toLowerCase())
   );
+
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedMemberships = filtered.slice(startIndex, endIndex);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+      
+      if (start === 1) {
+        end = maxVisible;
+      } else if (end === totalPages) {
+        start = totalPages - maxVisible + 1;
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-2 py-4 space-y-6">
@@ -75,57 +110,99 @@ export default function OwnerMembership() {
           Tidak ada data membership yang cocok.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map((m) => (
-            <div 
-              key={m.ID_Membership}
-              className="bg-[#141414] border border-white/5 rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all hover:border-white/10"
-            >
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#dfb34c]/10 border border-[#dfb34c]/20 flex items-center justify-center text-[#dfb34c] text-lg">
-                    <FaCrown />
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {paginatedMemberships.map((m) => (
+              <div 
+                key={m.ID_Membership}
+                className="bg-[#141414] border border-white/5 rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all hover:border-white/10"
+              >
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#dfb34c]/10 border border-[#dfb34c]/20 flex items-center justify-center text-[#dfb34c] text-lg">
+                      <FaCrown />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">{m.Nama_Lengkap}</h3>
+                      <p className="text-[10px] text-[#8e8e9f] mt-0.5">{m.Email || "-"}</p>
+                    </div>
+                  </div>
+
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase ${
+                    m.Status_Member === "Aktif" 
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                      : "bg-amber-500/15 text-amber-400 border border-amber-500/20 animate-pulse"
+                  }`}>
+                    {m.Status_Member === "Aktif" ? "Aktif" : "Pending"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/5 text-[11px] text-[#8e8e9f]">
+                  <div>
+                    <span className="text-[8px] uppercase block text-gray-500">Tier</span>
+                    <span className="font-bold text-white">{m.Level_Membership}</span>
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white">{m.Nama_Lengkap}</h3>
-                    <p className="text-[10px] text-[#8e8e9f] mt-0.5">{m.Email || "-"}</p>
+                    <span className="text-[8px] uppercase block text-gray-500">Total Poin</span>
+                    <span className="font-bold text-[#dfb34c]">{m.Total_Poin} Pts</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] uppercase block text-gray-500">Kunjungan</span>
+                    <span className="font-bold text-white">{m.Total_Kunjungan}x</span>
                   </div>
                 </div>
 
-                <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase ${
-                  m.Status_Member === "Aktif" 
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                    : "bg-amber-500/15 text-amber-400 border border-amber-500/20 animate-pulse"
-                }`}>
-                  {m.Status_Member === "Aktif" ? "Aktif" : "Pending"}
-                </span>
+                {m.Status_Member !== "Aktif" && (
+                  <button
+                    onClick={() => handleApprove(m.ID_Membership)}
+                    className="w-full mt-2 bg-emerald-500 text-[#111116] font-bold text-xs py-2 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <FaCheck /> Setujui Membership
+                  </button>
+                )}
               </div>
+            ))}
+          </div>
 
-              <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/5 text-[11px] text-[#8e8e9f]">
-                <div>
-                  <span className="text-[8px] uppercase block text-gray-500">Tier</span>
-                  <span className="font-bold text-white">{m.Level_Membership}</span>
-                </div>
-                <div>
-                  <span className="text-[8px] uppercase block text-gray-500">Total Poin</span>
-                  <span className="font-bold text-[#dfb34c]">{m.Total_Poin} Pts</span>
-                </div>
-                <div>
-                  <span className="text-[8px] uppercase block text-gray-500">Kunjungan</span>
-                  <span className="font-bold text-white">{m.Total_Kunjungan}x</span>
-                </div>
-              </div>
-
-              {m.Status_Member !== "Aktif" && (
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 bg-[#141414] border border-white/5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+              <p className="text-xs text-[#8e8e9f]">
+                Menampilkan <span className="font-bold text-white">{startIndex + 1}</span> - <span className="font-bold text-white">{Math.min(endIndex, totalItems)}</span> dari <span className="font-bold text-white">{totalItems}</span> member
+              </p>
+              <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => handleApprove(m.ID_Membership)}
-                  className="w-full mt-2 bg-emerald-500 text-[#111116] font-bold text-xs py-2 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-1.5"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
                 >
-                  <FaCheck /> Setujui Membership
+                  Sebelumnya
                 </button>
-              )}
+                
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 border rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
+                      currentPage === page
+                        ? "bg-[#dfb34c] text-[#111116] border-[#dfb34c] font-black"
+                        : "bg-[#1a1a1a] text-white border-white/5 hover:bg-white/5"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                >
+                  Selanjutnya
+                </button>
+              </div>
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>

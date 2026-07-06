@@ -9,6 +9,9 @@ export default function History() {
   const [historyItems, setHistoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     setLoading(true);
     try {
@@ -58,6 +61,35 @@ export default function History() {
     }
   };
 
+  // Pagination calculations
+  const totalItems = historyItems.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedHistory = historyItems.slice(startIndex, endIndex);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+      
+      if (start === 1) {
+        end = maxVisible;
+      } else if (end === totalPages) {
+        start = totalPages - maxVisible + 1;
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-2 py-4 space-y-6">
       {/* HEADER */}
@@ -97,7 +129,7 @@ export default function History() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.02] text-xs text-white/80">
-                {historyItems.map((item) => (
+                {paginatedHistory.map((item) => (
                   <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
                     <td className="px-6 py-4 font-bold text-white">
                       <span className={getStatusStyle(item.status)}>{item.type}</span>
@@ -116,6 +148,46 @@ export default function History() {
               </tbody>
             </table>
           </div>
+
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/[0.01]">
+              <p className="text-xs text-[#8e8e9f]">
+                Menampilkan <span className="font-bold text-white">{startIndex + 1}</span> - <span className="font-bold text-white">{Math.min(endIndex, totalItems)}</span> dari <span className="font-bold text-white">{totalItems}</span> log
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                >
+                  Sebelumnya
+                </button>
+                
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 border rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
+                      currentPage === page
+                        ? "bg-[#dfb34c] text-[#111116] border-[#dfb34c] font-black"
+                        : "bg-[#1a1a1a] text-white border-white/5 hover:bg-white/5"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                >
+                  Selanjutnya
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

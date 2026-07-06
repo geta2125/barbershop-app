@@ -6,7 +6,8 @@ const ROLE_MAP = {
   Owner: "owner",
   Barber: "barber",
   Member: "member",
-  Customer: "member",
+  Customer: "customer",
+  Kasir: "kasir",
   Staff: "barber",
 };
 
@@ -15,6 +16,8 @@ const LABEL_MAP = {
   owner: "Owner",
   barber: "Barber",
   member: "Member",
+  customer: "Customer",
+  kasir: "Kasir",
 };
 
 function normalizeRole(role = "member") {
@@ -22,15 +25,17 @@ function normalizeRole(role = "member") {
 }
 
 function mapUser(row = {}) {
+  const roleVal = String(row.role || "member").toLowerCase();
   return {
     ...row,
     id: row.id || row.ID_Customer,
     nama: row.name || row.full_name || row.nama || "",
     full_name: row.full_name || row.name || "",
-    role: LABEL_MAP[row.role] || row.role || "Member",
-    roleValue: row.role,
-    roleLabel: LABEL_MAP[row.role] || row.role || "Member",
+    role: LABEL_MAP[roleVal] || row.role || "Member",
+    roleValue: roleVal,
+    roleLabel: LABEL_MAP[roleVal] || row.role || "Member",
     status: row.status || "Aktif",
+    phone: row.phone || row.phone_number || row.no_hp || "",
   };
 }
 
@@ -66,19 +71,39 @@ export async function getCurrentProfile() {
 export const usersAPI = {
   async fetchUsers() {
     try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*");
+      if (error) throw error;
+      return (data || []).map(mapUser);
+    } catch (e) {
+      console.warn("Supabase fetch users failed, falling back to local DB:", e);
       const list = db.getUsers();
       return list.map(mapUser);
-    } catch (e) {
-      console.error(e);
-      return [];
     }
   },
 
   async createUser(form) {
     try {
+      const newUser = {
+        name: form.nama,
+        full_name: form.nama,
+        email: form.email,
+        role: normalizeRole(form.role),
+        status: form.status || "Aktif",
+      };
+      const { data, error } = await supabase
+        .from("users")
+        .insert([newUser])
+        .select()
+        .single();
+      if (error) throw error;
+      return mapUser(data);
+    } catch (e) {
+      console.warn("Supabase create user failed, using local DB fallback:", e);
       const list = db.getUsers();
       const newId = `user-${Date.now()}`;
-      const newUser = {
+      const fallbackUser = {
         id: newId,
         name: form.nama,
         email: form.email,
@@ -86,16 +111,31 @@ export const usersAPI = {
         status: form.status || "Aktif",
         created_at: new Date().toISOString().slice(0, 10)
       };
-      list.unshift(newUser);
+      list.unshift(fallbackUser);
       db.saveUsers(list);
-      return mapUser(newUser);
-    } catch (e) {
-      throw e;
+      return mapUser(fallbackUser);
     }
   },
 
   async updateUser(id, form) {
     try {
+      const updatedFields = {
+        name: form.nama,
+        full_name: form.nama,
+        email: form.email,
+        role: normalizeRole(form.role),
+        status: form.status,
+      };
+      const { data, error } = await supabase
+        .from("users")
+        .update(updatedFields)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return mapUser(data);
+    } catch (e) {
+      console.warn("Supabase update user failed, using local DB fallback:", e);
       const list = db.getUsers();
       const idx = list.findIndex(u => String(u.id) === String(id));
       if (idx === -1) throw new Error("User not found");
@@ -110,18 +150,21 @@ export const usersAPI = {
       list[idx] = updated;
       db.saveUsers(list);
       return mapUser(updated);
-    } catch (e) {
-      throw e;
     }
   },
 
   async deleteUser(id) {
     try {
+      const { error } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    } catch (e) {
+      console.warn("Supabase delete user failed, using local DB fallback:", e);
       let list = db.getUsers();
       list = list.filter(u => String(u.id) !== String(id));
       db.saveUsers(list);
-    } catch (e) {
-      throw e;
     }
   },
 

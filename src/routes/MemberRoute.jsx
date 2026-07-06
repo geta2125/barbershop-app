@@ -11,7 +11,7 @@ export default function MemberRoute() {
         return <Navigate to="/login" replace />;
     }
 
-    if (profile?.role !== "member") {
+    if (profile?.role !== "member" && profile?.role !== "customer") {
         return <Navigate to="/" replace />;
     }
 

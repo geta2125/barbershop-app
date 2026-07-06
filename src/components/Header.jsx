@@ -60,10 +60,13 @@ export default function Header() {
     const getProfileLink = () => {
         if (!profile) return "/";
         switch (profile.role) {
-            case "admin": return "/admin/settings";
+            case "admin":
+            case "kasir":
+            case "cashier": return "/admin/settings";
             case "owner": return "/owner/settings";
             case "barber": return "/barber/profile";
-            case "member": return "/member/profile";
+            case "member":
+            case "customer": return "/member/profile";
             default: return "/";
         }
     };
@@ -71,10 +74,13 @@ export default function Header() {
     const getSettingsLink = () => {
         if (!profile) return "/";
         switch (profile.role) {
-            case "admin": return "/admin/settings";
+            case "admin":
+            case "kasir":
+            case "cashier": return "/admin/settings";
             case "owner": return "/owner/settings";
             case "barber": return "/barber/profile";
-            case "member": return "/member/profile";
+            case "member":
+            case "customer": return "/member/profile";
             default: return "/";
         }
     };

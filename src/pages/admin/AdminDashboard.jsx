@@ -93,7 +93,7 @@ export default function AdminDashboard() {
           <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#dfb34c]" />
           <span className="text-[10px] uppercase text-[#8e8e9f] tracking-wider font-bold">Barber Standby</span>
           <h3 className="text-2xl font-black text-white mt-2">
-            {barbers.filter(b => b.status === "Standby").length} Barber
+            {barbers.filter(b => b.status === "Standby" || b.status === "Aktif").length} Barber
           </h3>
           <p className="text-[10px] text-[#dfb34c] mt-2">Siap melayani pelanggan</p>
         </div>
@@ -242,7 +242,7 @@ export default function AdminDashboard() {
                     <p className="text-[10px] text-[#8e8e9f] mt-0.5">{barber.specialty}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${barber.status === "Standby" ? "bg-emerald-500" : "bg-[#dfb34c]"}`} />
+                    <span className={`w-2 h-2 rounded-full ${barber.status === "Standby" || barber.status === "Aktif" ? "bg-emerald-500" : "bg-[#dfb34c]"}`} />
                     <span className="text-[11px] font-bold text-[#8e8e9f]">{barber.status}</span>
                   </div>
                 </div>

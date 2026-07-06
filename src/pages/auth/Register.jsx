@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -41,7 +41,8 @@ export default function Register() {
                 dataForm.nama,
                 dataForm.email,
                 dataForm.password,
-                dataForm.phone
+                dataForm.phone,
+                dataForm.role
             );
 
             if (registerError) throw registerError;
@@ -181,16 +182,22 @@ export default function Register() {
                         Hak Akses / Role
                     </label>
                     <div className="relative">
-                        <div
-                            className="w-full pl-11 pr-4 py-3 bg-[#141414] border border-white/5 rounded-xl text-left text-sm transition outline-none flex items-center justify-between opacity-80"
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none z-10">
+                            <FiShield size={16} className="text-[#A87C2D]" />
+                        </span>
+                        <select
+                            name="role"
+                            value={dataForm.role}
+                            onChange={handleChange}
+                            disabled={loading}
+                            className="w-full pl-11 pr-10 py-3 bg-[#141414] border border-white/5 rounded-xl text-white outline-none transition disabled:opacity-50 text-sm focus:border-[#A87C2D] focus:ring-2 focus:ring-[#A87C2D]/10 appearance-none cursor-pointer"
                         >
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                <FiShield size={16} className="text-[#A87C2D]" />
-                            </span>
-                            <span className="text-white">
-                                Member
-                            </span>
-                        </div>
+                            <option value="member" className="bg-[#141414] text-white">Member</option>
+                            <option value="customer" className="bg-[#141414] text-white">Customer</option>
+                            <option value="barber" className="bg-[#141414] text-white">Barber</option>
+                            <option value="owner" className="bg-[#141414] text-white">Owner</option>
+                            <option value="admin" className="bg-[#141414] text-white">Admin</option>
+                        </select>
                     </div>
                 </div>
 

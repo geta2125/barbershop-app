@@ -104,8 +104,8 @@ export default function OwnerBarber() {
                     alt={b.name} 
                     className="w-20 h-20 rounded-full object-cover border-2 border-[#dfb34c]/15"
                   />
-                  <span className={`absolute bottom-0 right-1 w-3.5 h-3.5 border-2 border-[#141414] rounded-full ${
-                    b.status === "Standby" ? "bg-emerald-500" : "bg-[#dfb34c]"
+                   <span className={`absolute bottom-0 right-1 w-3.5 h-3.5 border-2 border-[#141414] rounded-full ${
+                    b.status === "Standby" || b.status === "Aktif" ? "bg-emerald-500" : "bg-[#dfb34c]"
                   }`} />
                 </div>
 

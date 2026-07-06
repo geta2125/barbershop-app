@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { FaWhatsapp } from "react-icons/fa";
 import {
     BadgePercent,
     BarChart3,
@@ -236,12 +237,20 @@ export default function LandingPage() {
                         ))}
                     </div>
 
-                    <Link
-                        to="/register"
-                        className="inline-flex items-center justify-center rounded-lg bg-[#E9C664] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[#d9b855]"
-                    >
-                        Mulai Gratis
-                    </Link>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            to="/login"
+                            className="text-sm font-semibold text-white/80 hover:text-white transition"
+                        >
+                            Masuk
+                        </Link>
+                        <Link
+                            to="/register"
+                            className="inline-flex items-center justify-center rounded-lg bg-[#E9C664] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[#d9b855]"
+                        >
+                            Daftar
+                        </Link>
+                    </div>
                 </nav>
             </header>
 
@@ -260,17 +269,17 @@ export default function LandingPage() {
 
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                         <Link
+                            to="/login"
+                            className="inline-flex items-center justify-center rounded-lg border border-white/15 px-6 py-3 font-semibold text-white transition hover:border-[#E9C664] hover:text-[#E9C664]"
+                        >
+                            Masuk
+                        </Link>
+                        <Link
                             to="/register"
                             className="inline-flex items-center justify-center rounded-lg bg-[#E9C664] px-6 py-3 font-semibold text-black transition hover:bg-[#d9b855]"
                         >
-                            Mulai Gratis
+                            Daftar Sekarang
                         </Link>
-                        <a
-                            href="#analytics"
-                            className="inline-flex items-center justify-center rounded-lg border border-white/15 px-6 py-3 font-semibold text-white transition hover:border-[#E9C664] hover:text-[#E9C664]"
-                        >
-                            Lihat Demo
-                        </a>
                     </div>
                 </div>
 
@@ -366,12 +375,20 @@ export default function LandingPage() {
                             <p className="text-sm font-semibold uppercase tracking-wide text-[#E9C664]">Solusi</p>
                             <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-3xl font-extrabold text-[#E9C664]">Groom Gold CRM</p>
-                                <Link
-                                    to="/register"
-                                    className="inline-flex items-center justify-center rounded-lg bg-[#E9C664] px-5 py-3 font-semibold text-black transition hover:bg-[#d9b855]"
-                                >
-                                    Registrasi Sekarang
-                                </Link>
+                                <div className="flex gap-3">
+                                    <Link
+                                        to="/login"
+                                        className="inline-flex items-center justify-center rounded-lg border border-[#E9C664]/20 px-5 py-3 font-semibold text-[#E9C664] transition hover:bg-[#E9C664]/10"
+                                    >
+                                        Masuk
+                                    </Link>
+                                    <Link
+                                        to="/register"
+                                        className="inline-flex items-center justify-center rounded-lg bg-[#E9C664] px-5 py-3 font-semibold text-black transition hover:bg-[#d9b855]"
+                                    >
+                                        Daftar
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -446,17 +463,17 @@ export default function LandingPage() {
                         />
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                             <Link
+                                to="/login"
+                                className="inline-flex items-center justify-center rounded-lg border border-white/15 px-6 py-3 font-semibold text-white transition hover:border-[#E9C664] hover:text-[#E9C664]"
+                            >
+                                Masuk
+                            </Link>
+                            <Link
                                 to="/register"
                                 className="inline-flex items-center justify-center rounded-lg bg-[#E9C664] px-6 py-3 font-semibold text-black transition hover:bg-[#d9b855]"
                             >
-                                Mulai Gratis
+                                Daftar
                             </Link>
-                            <a
-                                href="#harga"
-                                className="inline-flex items-center justify-center rounded-lg border border-white/15 px-6 py-3 font-semibold text-white transition hover:border-[#E9C664] hover:text-[#E9C664]"
-                            >
-                                Lihat Harga
-                            </a>
                         </div>
                     </div>
 
@@ -639,17 +656,17 @@ export default function LandingPage() {
                     </div>
                     <div className="flex flex-col gap-3 sm:flex-row">
                         <Link
+                            to="/login"
+                            className="inline-flex items-center justify-center rounded-lg border border-black/20 px-7 py-3 font-semibold text-black transition hover:bg-black/10"
+                        >
+                            Masuk
+                        </Link>
+                        <Link
                             to="/register"
                             className="inline-flex items-center justify-center rounded-lg bg-black px-7 py-3 font-semibold text-white transition hover:bg-[#2A2A2A]"
                         >
-                            Mulai Gratis
+                            Daftar
                         </Link>
-                        <a
-                            href="#analytics"
-                            className="inline-flex items-center justify-center rounded-lg border border-black/20 px-7 py-3 font-semibold text-black transition hover:bg-black/10"
-                        >
-                            Jadwalkan Demo
-                        </a>
                     </div>
                 </div>
             </section>
@@ -695,7 +712,7 @@ export default function LandingPage() {
                             </h4>
                             <div className="space-y-2 text-sm text-white/60">
                                 <p>Email: groomgold@groomgold.id</p>
-                                <p>WhatsApp: +62 812-3456-7890</p>
+                                <p>WhatsApp: +62 859-7922-9792</p>
                                 <p>Lokasi: Pekanbaru, Riau</p>
                             </div>
                         </div>
@@ -706,6 +723,17 @@ export default function LandingPage() {
                     </div>
                 </div>
             </footer>
+
+            {/* FLOATING WHATSAPP BUTTON */}
+            <a
+                href="https://wa.me/6285979229792?text=Halo%20Groom%20Gold%2C%20saya%20ingin%20bertanya%20tentang%20aplikasi..."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#E9C664] hover:bg-[#d9b855] text-black rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 border border-[#E9C664]/20"
+                title="Tanya Kami"
+            >
+                <FaWhatsapp className="text-2xl animate-bounce text-black" />
+            </a>
         </main>
     );
 }

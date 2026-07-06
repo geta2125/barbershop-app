@@ -25,6 +25,9 @@ export default function Users() {
   const [role, setRole] = useState("Admin");
   const [status, setStatus] = useState("Aktif");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // multiples of 3 for nice grid rendering
+
   const loadUsers = async () => {
     setLoading(true);
     try {
@@ -40,6 +43,10 @@ export default function Users() {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const openAddModal = () => {
     setIsEditMode(false);
@@ -117,11 +124,44 @@ export default function Users() {
     (user.role && user.role.toLowerCase().includes(search.toLowerCase()))
   );
 
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filtered.slice(startIndex, endIndex);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+      
+      if (start === 1) {
+        end = maxVisible;
+      } else if (end === totalPages) {
+        start = totalPages - maxVisible + 1;
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  };
+
   const getRoleBadge = (role) => {
-    switch (role) {
-      case "Admin": return "bg-red-500/10 text-red-400 border border-red-500/20";
-      case "Owner": return "bg-[#dfb34c]/10 text-[#dfb34c] border border-[#dfb34c]/20";
-      case "Barber": return "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+    const r = String(role || "Member").toLowerCase();
+    switch (r) {
+      case "admin": return "bg-red-500/10 text-red-400 border border-red-500/20";
+      case "owner": return "bg-[#dfb34c]/10 text-[#dfb34c] border border-[#dfb34c]/20";
+      case "barber": return "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+      case "member": return "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
+      case "customer": return "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+      case "kasir":
+      case "cashier": return "bg-orange-500/10 text-orange-400 border border-orange-500/20";
       default: return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
     }
   };
@@ -164,53 +204,95 @@ export default function Users() {
         {filtered.length === 0 ? (
           <EmptyState title="Pengguna tidak ditemukan" />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((user) => (
-              <div 
-                key={user.id}
-                className="bg-[#141414] border border-white/5 rounded-3xl p-5 flex flex-col justify-between gap-4 transition-all hover:border-[#dfb34c]/20"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
-                    {user.nama ? user.nama.charAt(0).toUpperCase() : user.name ? user.name.charAt(0).toUpperCase() : "U"}
-                  </div>
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-white truncate">{user.nama || user.name || "N/A"}</h3>
-                      <span className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-wider uppercase ${getRoleBadge(user.role)}`}>
-                        {user.role}
-                      </span>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginatedUsers.map((user) => (
+                <div 
+                  key={user.id}
+                  className="bg-[#141414] border border-white/5 rounded-3xl p-5 flex flex-col justify-between gap-4 transition-all hover:border-[#dfb34c]/20"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
+                      {user.nama ? user.nama.charAt(0).toUpperCase() : user.name ? user.name.charAt(0).toUpperCase() : "U"}
                     </div>
-                    <p className="text-xs text-[#8e8e9f] flex items-center gap-1.5 truncate"><FaEnvelope className="text-white/20" /> {user.email}</p>
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-white truncate">{user.nama || user.name || "N/A"}</h3>
+                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-wider uppercase ${getRoleBadge(user.role)}`}>
+                          {user.role}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#8e8e9f] flex items-center gap-1.5 truncate"><FaEnvelope className="text-white/20" /> {user.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-white/5 pt-3 text-xs">
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase ${
+                      user.status === "Aktif"
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : "bg-red-500/10 text-red-400 border-red-500/20"
+                    }`}>
+                      {user.status || "Aktif"}
+                    </span>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openEditModal(user)}
+                        className="p-2 bg-white/5 hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 hover:border-[#dfb34c]/20 rounded-lg inline-flex transition-all text-xs"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="p-2 bg-red-500/5 hover:bg-red-500/10 text-red-400 border border-red-500/10 hover:border-red-500/20 rounded-lg inline-flex transition-all text-xs"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                <div className="flex items-center justify-between border-t border-white/5 pt-3 text-xs">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase ${
-                    user.status === "Aktif"
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                      : "bg-red-500/10 text-red-400 border-red-500/20"
-                  }`}>
-                    {user.status || "Aktif"}
-                  </span>
+            {/* PAGINATION */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 bg-[#141414] border border-white/5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                <p className="text-xs text-[#8e8e9f]">
+                  Menampilkan <span className="font-bold text-white">{startIndex + 1}</span> - <span className="font-bold text-white">{Math.min(endIndex, totalItems)}</span> dari <span className="font-bold text-white">{totalItems}</span> pengguna
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                  >
+                    Sebelumnya
+                  </button>
+                  
+                  {getPageNumbers().map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-9 h-9 border rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
+                        currentPage === page
+                          ? "bg-[#dfb34c] text-[#111116] border-[#dfb34c] font-black"
+                          : "bg-[#1a1a1a] text-white border-white/5 hover:bg-white/5"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openEditModal(user)}
-                      className="p-2 bg-white/5 hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 hover:border-[#dfb34c]/20 rounded-lg inline-flex transition-all text-xs"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="p-2 bg-red-500/5 hover:bg-red-500/10 text-red-400 border border-red-500/10 hover:border-red-500/20 rounded-lg inline-flex transition-all text-xs"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#dfb34c]/10 text-white hover:text-[#dfb34c] border border-white/5 disabled:opacity-20 disabled:pointer-events-none rounded-xl text-xs font-bold transition-all"
+                  >
+                    Selanjutnya
+                  </button>
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </Container>
@@ -281,7 +363,9 @@ export default function Users() {
                     <option value="Admin">Admin</option>
                     <option value="Owner">Owner</option>
                     <option value="Barber">Barber</option>
+                    <option value="Kasir">Kasir</option>
                     <option value="Member">Member</option>
+                    <option value="Customer">Customer</option>
                   </select>
                 </div>
 

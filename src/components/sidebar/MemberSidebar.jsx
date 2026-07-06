@@ -4,7 +4,8 @@ import {
     FaHistory,
     FaCrown,
     FaCommentDots,
-    FaUser
+    FaUser,
+    FaWhatsapp
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 
@@ -114,6 +115,38 @@ export default function MemberSidebar() {
                             </li>
                         ))}
                     </ul>
+                </div>
+            </div>
+
+            {/* BOTTOM SECTION (WHATSAPP SUPPORT) */}
+            <div className="px-4 pt-2">
+                <div className="bg-gradient-to-br from-[#dfb34c]/12 to-[#dfb34c]/2 border border-[#242335] rounded-2xl p-4 relative overflow-hidden">
+                    {/* DECORATIVE EFFECT */}
+                    <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-[#dfb34c]/8 blur-sm" />
+
+                    {/* CONTENT */}
+                    <div className="relative z-10">
+                        <div className="w-10 h-10 rounded-xl bg-[#dfb34c]/10 flex items-center justify-center mb-3">
+                            <FaWhatsapp className="text-[#dfb34c] text-lg" />
+                        </div>
+
+                        <h3 className="text-sm font-bold text-white mb-0.5">
+                            Butuh Bantuan?
+                        </h3>
+
+                        <p className="text-[11px] text-[#8e8e9f] leading-relaxed mb-4">
+                            Hubungi CS kami untuk bantuan atau tanya jawab.
+                        </p>
+
+                        <a 
+                            href="https://wa.me/6285979229792?text=Halo%20Groom%20Gold%2C%20saya%20member%20ingin%20bertanya..."
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full bg-[#dfb34c] text-[#111116] font-bold text-[11px] tracking-wider py-2.5 rounded-xl hover:opacity-90 transition-all duration-300 flex items-center justify-center gap-1.5"
+                        >
+                            CHAT WHATSAPP
+                        </a>
+                    </div>
                 </div>
             </div>
         </aside>

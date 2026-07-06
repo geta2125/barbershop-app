@@ -12,6 +12,8 @@ export default function Sidebar(){
     switch(profile?.role){
 
         case "admin":
+        case "kasir":
+        case "cashier":
             return <AdminSidebar/>;
 
         case "owner":
@@ -21,6 +23,7 @@ export default function Sidebar(){
             return <BarberSidebar/>;
 
         case "member":
+        case "customer":
             return <MemberSidebar/>;
 
         default:

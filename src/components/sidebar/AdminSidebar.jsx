@@ -9,9 +9,10 @@ import {
     FaCommentDots,
     FaCog,
     FaUsersCog,
-    FaGift
+    FaGift,
+    FaCashRegister
 } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 
 export default function AdminSidebar() {
     // MENU STYLE
@@ -39,6 +40,11 @@ export default function AdminSidebar() {
                     key: "/admin/dashboard",
                     label: "Dashboard",
                     icon: <FaHome />
+                },
+                {
+                    key: "/admin/pos",
+                    label: "Kasir POS",
+                    icon: <FaCashRegister />
                 }
             ]
         },
@@ -189,7 +195,7 @@ export default function AdminSidebar() {
                 </div>
             </div>
 
-            {/* BOTTOM SECTION (SUPPORT CARD) */}
+            {/* BOTTOM SECTION (CONSOLE KASIR) */}
             <div className="px-4 pt-2">
                 <div className="bg-gradient-to-br from-[#dfb34c]/12 to-[#dfb34c]/2 border border-[#242335] rounded-2xl p-4 relative overflow-hidden">
                     {/* DECORATIVE EFFECT */}
@@ -198,20 +204,20 @@ export default function AdminSidebar() {
                     {/* CONTENT */}
                     <div className="relative z-10">
                         <div className="w-10 h-10 rounded-xl bg-[#dfb34c]/10 flex items-center justify-center mb-3">
-                            <FaUsers className="text-[#dfb34c] text-base" />
+                            <FaCashRegister className="text-[#dfb34c] text-base" />
                         </div>
 
                         <h3 className="text-sm font-bold text-white mb-0.5">
-                            Need Help?
+                            Console Kasir
                         </h3>
 
                         <p className="text-[11px] text-[#8e8e9f] leading-relaxed mb-4">
-                            Contact support team for help.
+                            GroomGold POS aktif. Layani pembayaran dengan cepat.
                         </p>
 
-                        <button className="w-full bg-[#dfb34c] text-[#111116] font-bold text-[11px] tracking-wider py-2.5 rounded-xl hover:opacity-90 transition-all duration-300">
-                            CONTACT SUPPORT
-                        </button>
+                        <Link to="/admin/pos" className="w-full bg-[#dfb34c] text-[#111116] font-bold text-[11px] tracking-wider py-2.5 rounded-xl hover:opacity-90 transition-all duration-300 flex items-center justify-center">
+                            BUKA KASIR POS
+                        </Link>
                     </div>
                 </div>
             </div>
