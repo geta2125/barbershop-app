@@ -117,7 +117,7 @@ export default function AdminDashboard() {
           {/* QUICK ACTIONS */}
           <div className="grid grid-cols-3 gap-4">
             <Link 
-              to="/admin/booking"
+              to="/admin/pos"
               className="bg-[#141414] border border-white/5 hover:border-[#dfb34c]/30 rounded-2xl p-5 flex flex-col items-center gap-3 transition-all duration-300 hover:scale-[1.02] text-center"
             >
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg"><FaPlus /></div>

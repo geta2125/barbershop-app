@@ -72,12 +72,10 @@ export default function Login() {
 
             if (loginError) throw loginError;
 
-            // Pastikan profile ter-refresh sebelum navigasi
-            await refreshProfile();
-
-            navigate(redirectPath, {
-                replace: true,
-            });
+            // GuestRoute akan otomatis mendeteksi perubahan session/profile
+            // dan melakukan navigasi ke dashboard sesuai role.
+            // Jadi kita tidak perlu memanggil navigate() secara manual di sini.
+            
         } catch (err) {
             console.error(err);
             if (err.message === "Invalid login credentials") {
@@ -87,7 +85,6 @@ export default function Login() {
             } else {
                 setError(err.message || "Terjadi kesalahan saat masuk.");
             }
-        } finally {
             setLoading(false);
         }
     };
@@ -246,3 +243,11 @@ export default function Login() {
         </div>
     );
 }
+
+
+//flownya 
+// [Login.jsx] handleSubmit() 
+//     ➔ [auth-context.jsx] login() ➔ supabase.auth.signInWithPassword()
+//     ➔ [auth-context.jsx] loadProfile() ➔ query public.users
+//     ➔ [roleRedirect.js] roleRedirect(profile.role)
+//     ➔ [Login.jsx] navigate(redirectPath)

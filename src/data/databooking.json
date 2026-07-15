@@ -298,5 +298,50 @@
     "status_pembayaran": "Lunas",
     "status_booking": "Completed",
     "catatan": "-"
+  },
+  {
+    "id_booking": 21,
+    "nama_customer": "Ahmad Fauzi",
+    "email": "ahmad@gmail.com",
+    "no_hp": "08123456721",
+    "layanan": "Pompadour",
+    "barber": "Candra",
+    "durasi": 45,
+    "jadwal": "2026-07-15 10:00",
+    "harga": 95000,
+    "metode_pembayaran": "Cash",
+    "status_pembayaran": "Lunas",
+    "status_booking": "Pending",
+    "catatan": "Jangan terlalu tipis"
+  },
+  {
+    "id_booking": 22,
+    "nama_customer": "Bintang Mahardika",
+    "email": "bintang@gmail.com",
+    "no_hp": "08123456722",
+    "layanan": "Hair Spa",
+    "barber": "Candra",
+    "durasi": 60,
+    "jadwal": "2026-07-15 13:00",
+    "harga": 120000,
+    "metode_pembayaran": "E-Wallet",
+    "status_pembayaran": "Lunas",
+    "status_booking": "On Going",
+    "catatan": "-"
+  },
+  {
+    "id_booking": 23,
+    "nama_customer": "Raditya Dika",
+    "email": "radit@gmail.com",
+    "no_hp": "08123456723",
+    "layanan": "Fade Cut",
+    "barber": "Candra",
+    "durasi": 30,
+    "jadwal": "2026-07-15 16:30",
+    "harga": 85000,
+    "metode_pembayaran": "Cash",
+    "status_pembayaran": "Lunas",
+    "status_booking": "Completed",
+    "catatan": "Rapi pinggir"
   }
 ]

@@ -40,6 +40,7 @@ const OwnerMembership = React.lazy(() => import("./pages/owner/Membership"));
 const OwnerFeedback = React.lazy(() => import("./pages/owner/Feedback"));
 
 const BarberDashboard = React.lazy(() => import("./pages/barber/BarberDashboard"));
+const BarberTodayBooking = React.lazy(() => import("./pages/barber/BarberTodayBooking"));
 const BarberHistory = React.lazy(() => import("./pages/barber/BarberHistory"));
 const BarberFeedback = React.lazy(() => import("./pages/barber/BarberFeedback"));
 const BarberProfile = React.lazy(() => import("./pages/barber/BarberProfile"));
@@ -154,7 +155,7 @@ export default function App() {
           <Route path="/barber" element={<BarberLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<BarberDashboard />} />
-            <Route path="today-booking" element={<BarberDashboard />} />
+            <Route path="today-booking" element={<BarberTodayBooking />} />
             <Route path="history" element={<BarberHistory />} />
             <Route path="feedback" element={<BarberFeedback />} />
             <Route path="profile" element={<BarberProfile />} />

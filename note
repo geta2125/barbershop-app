@@ -1,0 +1,20 @@
+// 1. Alur Login
+// User Input Form ➔ Fungsi login() di Trigger ➔ Verifikasi di Supabase Auth API ➔ Ambil Sesi Selesai ➔ Query Tabel public.users berdasarkan UUID ➔ Simpan Data User ke Global State Context ➔ Evaluasi Fungsi roleRedirect(role) ➔ Arahkan Halaman via useNavigate() ➔ Validasi Route Guard di Router.
+
+// 2. Alur Booking
+// Form Multi-Step Member ➔ Kompilasi Objek bookingData ➔ Panggil bookingService.create() ➔ Penetapan Auto-Increment ID ➔ Penyimpanan Array ke Browser LocalStorage ➔ (Untuk Versi Online) Kirim data ke Tabel public.bookings Supabase ➔ Trigger Database PostgreSQL Membuat Notifikasi & Update Poin Loyalitas Pelanggan.
+
+// 3. Alur Penyaringan Data (Filter Data Flow)
+// Ambil Data Mentah (Array JSON/LocalStorage) ➔ Tentukan Parameter Filter (Tanggal Hari ini / Status "Aktif" / No HP) ➔ Eksekusi Javascript Array Methods (.filter() atau .find()) ➔ Simpan Output ke React State ➔ Render Komponen UI Ter-update.
+
+// 4. Alur Umpan Balik / Ulasan (Feedback Flow)
+// Saring barber yang Completed ➔ Isi Modal Form (Bintang & Teks) ➔ Kirim ke feedbackService.create() ➔ Auto-Increment ID & Timestamp Tanggal ➔ Simpan ke Antrean Teratas localStorage ➔ Ulasan Tampil di Dashboard Barber (untuk komisi/rating) & Dashboard Owner (untuk evaluasi kinerja).
+
+// 5. Alur Kasir POS (Point of Sale / Pembayaran)
+// Kasir klik "Bayar" ➔ bookingService perbarui status Lunas & Completed ➔ transactionService saring otomatis booking yang berstatus lunas ➔ Objek Invoice/Struk dibuat ➔ Trigger Database menghitung poin belanja (+1 Poin / Rp 10rb) ➔ Akumulasi total omzet & total transaksi pelanggan bertambah ➔ Tier Level Membership ter-update otomatis.
+
+// 6. Alur membership Keanggotaan & Penukaran Hadiah (Membership & Reward Flow)
+// Deteksi profil member ➔ Inisiasi data member otomatis di LocalStorage ➔ Validasi ketersediaan poin saat redeem ➔ Kurangi poin & buat objek kupon status "Ready to Claim" ➔ Tampilkan riwayat kupon aktif ➔ (Untuk Versi Online) Fungsi SQL level_for_points memperbarui level tiering member di database cloud.
+
+// 7. Alur Manajemen Pelanggan (Customer Flow) 
+// Pelanggan baru daftar (atau ditambah Kasir) ➔ Service memetakan atribut nama/email ➔ Query SQL Insert terkirim ke Supabase ➔ Tabel customers diperbarui ➔ Trigger database menyinkronkan data dengan detail login ➔ Statistik transaksi harian (total transaksi & total belanja) terhitung otomatis di tabel pelanggan setiap kasir POS menyelesaikan transaksi.
